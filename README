@@ -1,0 +1,43 @@
+INSTALL
+---------
+Obtain source from google's SVN repository, or download the tar/gzip archive.
+
+Un-pack the archive in your document root:
+
+	tar -xzvf book-of-agreements-0.2.tgz
+
+Create a mysql database for your project, and create the tables:
+
+	mysql -u username -p databasename < sql/boa.sql
+
+Fill in the mysql connection information found in the config file:
+
+	public/config.php
+
+Fill in an email address in the various single-quote delimited spaces. Add a
+name for your site, which will appear in the basic auth popup, for example
+"Organization Book of Agreements".
+
+Fill in sha1 passwords, you can use the sha1.php quick utility function to
+generate these.
+
+Fill in your mysql database connection info.
+
+Using your mysql client, add some entries to your committees table. For
+example:
+
+	insert into committees values(1, 1, 'Buildings', 'buildings');
+	insert into committees values(2, 2, 'Common House', 'ch');
+
+Now using your web browser, visit your website. There will likely be some
+greeting text, but you'll need to click on the "Member Login" link in the upper
+right corner in order to enter the application. You'll need to then login as
+the administrative user in order to add / edit / delete documents. Visit the
+following URL:
+
+	/?id=admin
+
+and enter the password you used to generate the sha1 string you entered into
+the $admin_string in the config.php page. From there, you should be provided
+with links to add new minutes or agreements.
+
