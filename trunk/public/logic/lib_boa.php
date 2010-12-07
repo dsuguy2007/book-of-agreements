@@ -657,11 +657,9 @@ EOHTML;
 			$this->id = $Max[0]['max'];
 		}
 
-		// can't use defined globals in heredocs...
-		$site = SITE_NAME;
-
+		$server_path = SERVER_PATH;
 		$msg = <<<EOHTML
-{$type} agreement http://{$_SERVER['HTTP_HOST']}/?id=agreement&num={$this->id}
+{$type} agreement http://{$server_path}/?id=agreement&num={$this->id}
 
 Title: {$this->title}
 Summary: {$this->summary}
@@ -676,7 +674,7 @@ EOHTML;
 		// to, subject, message, addl headers
 		$ret = mail(
 			AUDIT_CONTACT,
-			"{$site} BOA: {$type} {$this->title}",
+			SITE_NAME . " BOA: {$type} {$this->title}",
 			$msg,
 			'From: Book of Agreements <' . FROM_ADDRESS . ">\r\n"
 		);

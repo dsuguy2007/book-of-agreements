@@ -19,7 +19,19 @@ name for your site, which will appear in the basic auth popup, for example
 "Organization Book of Agreements".
 
 Fill in sha1 passwords, you can use the sha1.php quick utility function to
-generate these.
+generate these. Edit the file to list your desired password, then execute the
+file:
+
+	$ cat sha1.php 
+	<?php echo sha1('password') . "\n"; ?>
+
+	$ php sha1.php 
+	5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8
+
+	# edit your public/config.php file to make the array look like this:
+	$Basic_Auth_Users = array( 
+		'user' => '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
+	);
 
 Fill in your mysql database connection info.
 
@@ -40,6 +52,7 @@ Direct download example:
 	wget http://tango.freedesktop.org/releases/tango-icon-theme-0.8.90.tar.gz
 	tar -xzvf tango-icon-theme-0.8.90.tar.gz
 	ln -s tango-icon-theme-0.8.90/ tango
+	rm tango-icon-theme-0.8.90.tar.gz
 
 Now using your web browser, visit your website. There will likely be some
 greeting text, but you'll need to click on the "Member Login" link in the upper
