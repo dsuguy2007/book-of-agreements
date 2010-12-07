@@ -4,6 +4,9 @@
 	define('FROM_ADDRESS', ''); // add your email
 	define('SITE_NAME', ''); // site name which appears in the basic auth
 
+	// fill in the path to your website
+	define('SERVER_PATH', "{$_SERVER['HTTP_HOST']}/boa");
+
 	$Basic_Auth_Users = array( 
 		'user' => '', // enter sha1 password
 		'guest' => '' // enter sha1 password
