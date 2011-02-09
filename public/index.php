@@ -1,6 +1,11 @@
 <?php
 	session_start();
-	require_once( 'config.php' );
+
+	// if the file exists, then use it to pull in the users list. Otherwise,
+	// ignore it so it can be created.
+	if (file_exists('config.php')) {
+		require_once('config.php');
+	}
 
 	$authenticated = false;
 	if ( isset( $_SESSION['logged_in'] ) && $_SESSION['logged_in'] == 1 ) {
