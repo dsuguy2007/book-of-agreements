@@ -1,10 +1,15 @@
 <?php
-	#set default variables here:
-	$G_DEBUG = array( 1 );
-	require_once( 'config.php' );
+	global $G_DEBUG;
+	$G_DEBUG = array(0);
+
 	$api_loc = 'logic/php_api/';
 	require_once( $api_loc.'database/mysql_connex.php' );
-	session_register( "boa-admin-passwd" );
+
+	// if lacking config, create it
+	if (!file_exists('config.php')) {
+		require_once('logic/config_management.php');
+		create_config_file();
+	}
 
 	$PUBLIC_USER = false;
 	if (!$authenticated) {
