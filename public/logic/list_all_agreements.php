@@ -15,11 +15,11 @@
 		Cohousing Association</a> Book of Agreements is
 		our collection of what others may describe as their
 		"condominium documents". They are an extension of
-		our <a href="/?id=agreement&amp;num=120">Master Deed</a>
-		and <a href="/?id=agreement&amp;num=70">Bylaws</a>. As
+		our <a href="?id=agreement&amp;num=120">Master Deed</a>
+		and <a href="?id=agreement&amp;num=70">Bylaws</a>. As
 		described in our Bylaws, we use a consensus
 		decision making process, while using our <a
-		href="/?id=agreement&amp;num=127">vision
+		href="?id=agreement&amp;num=127">vision
 		statement</a> for guidance. Our <a
 		href="http://www.dleg.state.mi.us/bcs_corp/results.asp?ID=776590&page_name=corp">state
 		incorporation papers and subsequent updates</a>
@@ -41,7 +41,7 @@ EOHTML;
 	echo <<<EOHTML
 <div class="agreement">
 <h1 class="{$h1_class}">
-	<img class="tango" src="/display/images/tango/32x32/{$access_img}"
+	<img class="tango" src="display/images/tango/32x32/{$access_img}"
 		alt="agreements access icon" />
 	All {$pub}Agreements
 </h1>
@@ -59,20 +59,20 @@ EOHTML;
 
 	if ( $show == 'expired' ) {
 		$conditions = 'and agreements.expired=1 and agreements.surpassed_by=0 ';
-		$show_exp_surp_msg = '<p><a href="/?id=agreement">Show active agreements</a></p>';
+		$show_exp_surp_msg = '<p><a href="?id=agreement">Show active agreements</a></p>';
 		$show_link = '&amp;show=expired';
 	}
 	elseif ( $show == 'surpassed' ) {
 		$conditions = 'and agreements.surpassed_by != 0 ';
-		$show_exp_surp_msg = '<p><a href="/?id=agreement">Show active agreements</a></p>';
+		$show_exp_surp_msg = '<p><a href="?id=agreement">Show active agreements</a></p>';
 		$show_link = '&amp;show=surpassed';
 	}
 	else {
 		$conditions = 'and agreements.expired=0 and agreements.surpassed_by=0 ';
 		$show_exp_surp_msg = <<<EOHTML
 			<p>
-				Show <a href="/?id=agreement&amp;show=expired">expired</a>
-				or <a href="/?id=agreement&amp;show=surpassed">surpassed</a>
+				Show <a href="?id=agreement&amp;show=expired">expired</a>
+				or <a href="?id=agreement&amp;show=surpassed">surpassed</a>
 				agreements</a>
 			</p>
 EOHTML;

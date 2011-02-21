@@ -42,17 +42,17 @@
 		<div id="selectors">
 			<span id="bothselector">
 				<img class="tango"
-					src="/display/images/tango/32x32/status/folder-open.png">
+					src="display/images/tango/32x32/status/folder-open.png">
 				{$show_both}
 			</span>
 			<span id="agrmselector">
 				<img class="tango"
-					src="/display/images/tango/32x32/mimetypes/application-certificate.png">
+					src="display/images/tango/32x32/mimetypes/application-certificate.png">
 				{$show_agreements}
 			</span>
 			<span id="minselector">
 				<img class="tango"
-					src="/display/images/tango/32x32/mimetypes/text-x-generic.png">
+					src="display/images/tango/32x32/mimetypes/text-x-generic.png">
 				{$show_minutes}
 			</span>
 		</div>
@@ -94,9 +94,7 @@ EOHTML;
 						0, $sub_summary_length ) . '...' );
 				}
 
-				$cmty_name = '';
-				#if ( !isset( $cmty_num ))
-				$cmty_name = $Cmty->getName( $Cmty->cnum );
+				$cmty_name = $Cmty->getName();
 
 				$Items[] = <<<EOHTML
 					<div class="minutes">
@@ -106,7 +104,7 @@ EOHTML;
 						</h2>
 						<div class="item_topic">
 							<img class="topic_img tango"
-								src="/display/images/tango/32x32/mimetypes/text-x-generic.png">
+								src="display/images/tango/32x32/mimetypes/text-x-generic.png">
 							<div class="info">{$summary}</div>
 						</div>
 					</div>
@@ -160,7 +158,7 @@ EOHTML;
 						</h2>
 						<div class="item_topic">
 							<img class="topic_img tango"
-								src="/display/images/tango/32x32/mimetypes/application-certificate.png">
+								src="display/images/tango/32x32/mimetypes/application-certificate.png">
 							<div class="info">{$short_version}</div>
 						</div>
 					</div>
