@@ -74,8 +74,20 @@ function clean_html( $text )
 	$dash = chr(147);
 
 	# strip out any "smart quotes"
-	$Chars = str_split($text);
-	foreach($Chars as &$c) {
+	// PHP5: $Chars = str_split($text);
+
+	// The PHP4 way:
+	$changed = str_replace(' ', '~', $text);
+	$tmp = wordwrap($changed, 1, "\n", TRUE);
+	$Chars = explode("\n", $tmp);
+
+	$replaced = array();
+	foreach($Chars as $c) {
+		// more PHP4:
+		if ($c == '~') {
+			$c = ' ';
+		}
+
 		if (isset($Bad[ord($c)])) {
 			$c = '';
 			continue;
@@ -93,8 +105,9 @@ function clean_html( $text )
 			# long dash
 			case $dash: $c = '-'; break;
 		}
+		$replaced[] = $c;
 	}
-	$text = htmlentities(implode('', $Chars));
+	$text = htmlentities(implode('', $replaced));
 
 	return $text;
 }
@@ -102,15 +115,16 @@ function clean_html( $text )
 
 # ----------------------------------------------------
 
-class MyDate {
-	public $curyear;
-	public $year;
-	public $month;
-	public $day;
-	public $label;
+class MyDate
+{
+	var $curyear;
+	var $year;
+	var $month;
+	var $day;
+	var $label;
 
 	# MyDate
-	function __construct( $year='', $month='', $day='', $label=NULL)
+	function MyDate( $year='', $month='', $day='', $label=NULL)
 	{
 		$this->curyear = date('Y');
 		$this->year = is_int( $year ) ? $year : $this->curyear;
@@ -139,6 +153,8 @@ class MyDate {
 		global $Months;
 		$disp_label = !is_null($this->label) ? 
 			ucfirst($this->label) . ' ' : '';
+
+		// #!# add label to the forms...
 
 		# create day drop-down
 		$days = '';
@@ -173,10 +189,10 @@ EOHTML;
 }
 
 class Committee {
-	public $cnum;
+	var $cnum;
 
 	# Committee
-	function __construct( $n='' )
+	function Committee( $n='' )
 	{
 		$this->cnum = $n;
 	}
@@ -217,8 +233,12 @@ class Committee {
 	}
 
 	# Committee
-	function getName( $id )
+	function getName( $id=NULL )
 	{
+		if (is_null($id)) {
+			$id = $this->cnum;
+		}
+
 		global $Cmtys;
 		global $SubCmtys;
 		$name = '';
@@ -241,9 +261,9 @@ class Committee {
  * Parent class to both Agreements and Minutes
  */
 class BOADoc {
-	protected $mysql;
+	var $mysql;
 
-	public function __construct() {
+	public function BOADoc() {
 		global $HDUP;
 
 		require_once 'logic/mysql_api.php';
@@ -255,29 +275,30 @@ class BOADoc {
 /**
  * Agreements
  */
-class Agreement extends BOADoc {
-	public $doc_type = 'agreement';
-	public $id = null;
-	public $title = null;
-	public $summary = null;
-	public $full = null;
-	public $background = null;
-	public $comments = null;
-	public $processnotes = null;
-	public $cid = null;
-	public $Date;
-	public $surpassed_by;
-	public $expired;
-	public $search_points = 0;
-	public $found = '';
-	public $world_public = false;
-	public $found_summary = false;
+class Agreement extends BOADoc
+{
+	var $doc_type = 'agreement';
+	var $id = null;
+	var $title = null;
+	var $summary = null;
+	var $full = null;
+	var $background = null;
+	var $comments = null;
+	var $processnotes = null;
+	var $cid = null;
+	var $Date;
+	var $surpassed_by;
+	var $expired;
+	var $search_points = 0;
+	var $found = '';
+	var $world_public = false;
+	var $found_summary = false;
 
 	# agreement
-	function __construct( $i='', $t='', $s='', $f='', $b='', $c='', 
+	function Agreement( $i='', $t='', $s='', $f='', $b='', $c='', 
 			$p='', $c_id='', $D='', $sb=0, $x='', $wp=false )
 	{
-		parent::__construct();
+		parent::BOADoc();
 
 		$this->id = $i + 0;
 		$this->title = $t;
@@ -354,7 +375,7 @@ MODE) ) HAVING relevance > 0 ORDER BY relevance DESC;
 		}
 
 		$entryDate->setDate( $Agrm[0]['date'] );
-		$this->__construct(
+		$this->Agreement(
 			$Agrm[0]['id'],
 			$Agrm[0]['title'],
 			$Agrm[0]['summary'],
@@ -427,10 +448,11 @@ EOHTML;
 			$Replacement = new Agreement( $surpassed_by );
 			if ( $Replacement->isValid( )) {
 				$rep_title = format_html( $Replacement->title );
+				$date_string = $Replacement->Date->toString();
 				$condition = <<<EOHTML
 				<p class="notice">Surpassed By: 
 					<a href="?id=agreement&amp;num={$surpassed_by}">{$rep_title}</a>
-					({$Replacement->Date->toString()})
+					{$date_string}
 				</p>
 EOHTML;
 			}
@@ -508,7 +530,7 @@ EOHTML;
 						</h2>
 						{$condition}
 						<div class="item_topic">
-							<img class="topic_img tango" src="/display/images/tango/32x32/mimetypes/application-certificate.png" alt="agreement">
+							<img class="topic_img tango" src="display/images/tango/32x32/mimetypes/application-certificate.png" alt="agreement">
 							<div class="info">{$short}</div>
 						</div>
 					</div>
@@ -523,13 +545,13 @@ EOHTML;
 				$print_ver_dest = '';
 				if ( !$PUBLIC_USER ) {
 					$print_ver_label = <<<EOHTML
-						<img class="tango" src="/display/images/tango/32x32/devices/printer.png" border="0" alt="print">
+						<img class="tango" src="display/images/tango/32x32/devices/printer.png" border="0" alt="print">
 						format for printing
 EOHTML;
 					$print_ver_dest = $_SERVER['QUERY_STRING'] . '&amp;print=1';
 					if ( $print_version ) {
 						$print_ver_label = <<<EOHTML
-							<img class="tango" src="/display/images/tango/32x32/mimetypes/text-html.png" border="0" alt="full page">
+							<img class="tango" src="display/images/tango/32x32/mimetypes/text-html.png" border="0" alt="full page">
 							return to full page
 EOHTML;
 						$print_ver_dest = str_replace( '&amp;print=1', '',
@@ -538,6 +560,7 @@ EOHTML;
 				}
 
 				$date = $this->Date->toString( );
+
 				$cmty_name = $Cmty->getName( $this->cid );
 				$content = '';
 
@@ -587,12 +610,12 @@ EOHTML;
 			$link = <<<EOHTML
 				<div class="actions">
 					<a href="?id=admin&amp;doctype=agreement&amp;num={$this->id}">
-						<img class="tango" src="/display/images/tango/32x32/apps/accessories-text-editor.png" border="0" alt="edit" />
+						<img class="tango" src="display/images/tango/32x32/apps/accessories-text-editor.png" border="0" alt="edit" />
 						edit
 					</a>
 					&nbsp;&nbsp;
 					<a href="?id=admin&amp;doctype=agreement&amp;delete={$this->id}">
-						<img class="tango" src="/display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete" />
+						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete" />
 						delete
 					</a>
 				</div>
@@ -620,7 +643,6 @@ EOHTML;
 
 		$type = '';
 		if (( $update ) && ( is_numeric( $this->id ))) {
-
 			$type = 'updated';
 			$Info = array(
 				'title="' . clean_html( $this->title ) . '"',
@@ -687,9 +709,10 @@ EOHTML;
 		// to, subject, message, addl headers
 		$ret = mail(
 			AUDIT_CONTACT,
-			SITE_NAME . " BOA: {$type} {$this->title}",
+			"{$_SERVER['SERVER_NAME']} BOA: {$type} {$this->title}",
 			$msg,
-			'From: Book of Agreements <' . FROM_ADDRESS . ">\r\n"
+			'From: Book of Agreements <' . FROM_ADDRESS . ">\r\n" .
+				'Reply-To: process@gocoho.org'
 		);
 
 		if (!$ret) {
@@ -749,7 +772,7 @@ EOSQL;
 				<input type="hidden" name="delete" value="{$this->id}" />
 				<div align="right">
 					<a href="?id=admin&amp;doctype=agreement&amp;delete={$this->id}&amp;confirm_del=1">
-						<img class="tango" src="/display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete" />
+						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete" />
 						confirm delete</a>
 				</div>
 				</form>
@@ -772,21 +795,21 @@ EOHTML;
  * Minutes
  */
 class Minutes extends BOADoc {
-	public $doc_type = 'minutes';
-	public $m_id = 0;
-	public $notes = null;
-	public $agenda = null;
-	public $content = null;
-	public $cid = 0;
-	public $Date;
-	public $search_points = 0;
-	public $found = '';
-	public $found_agenda = false;
+	var $doc_type = 'minutes';
+	var $m_id = 0;
+	var $notes = null;
+	var $agenda = null;
+	var $content = null;
+	var $cid = 0;
+	var $Date;
+	var $search_points = 0;
+	var $found = '';
+	var $found_agenda = false;
 
 	# minutes
-	function __construct( $m='', $n='', $a='', $c='', $c_id='', $D='' )
+	function Minutes( $m='', $n='', $a='', $c='', $c_id='', $D='' )
 	{
-		parent::__construct();
+		parent::BOADoc();
 
 		$this->notes = clean_html($n);
 		$this->agenda = clean_html($a);
@@ -825,7 +848,7 @@ class Minutes extends BOADoc {
 		}
 		$entryDate->setDate( $Min[0]['date'] );
 
-		$this->__construct( $Min[0]['m_id'], $Min[0]['notes'], 
+		$this->Minutes( $Min[0]['m_id'], $Min[0]['notes'], 
 			$Min[0]['agenda'], $Min[0]['content'], $Min[0]['cid'], $entryDate );
 	}
 
@@ -895,7 +918,7 @@ class Minutes extends BOADoc {
 								{$cmty_name}</a> minutes
 						</h2>
 						<div class="item_topic">
-							<img class="topic_img tango" src="/display/images/tango/32x32/mimetypes/text-x-generic.png" alt="minutes">
+							<img class="topic_img tango" src="display/images/tango/32x32/mimetypes/text-x-generic.png" alt="minutes">
 							<div class="info">{$short}</div>
 						</div>
 					</div>
@@ -1019,9 +1042,9 @@ EOHTML;
 				<h2>Are you sure you want to delete these minutes?</h2>
 				<h1 class="mins">{$cmty_name}: {$date_string}</h1>
 			</div>
-			<div class="actions"
+			<div class="actions">
 				<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->m_id}&confirm_del=1">
-					<img class="tango" src="/display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete">
+					<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete">
 						confirm delete</a>
 			</div>
 EOHTML;

@@ -1,6 +1,6 @@
 <div class="minutes">
 <h1 class="mins">
-	<img class="tango" src="/display/images/tango/32x32/apps/system-users.png">
+	<img class="tango" src="display/images/tango/32x32/apps/system-users.png">
 	All Minutes
 </h1>
 
