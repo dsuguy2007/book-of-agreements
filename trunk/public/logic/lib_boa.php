@@ -102,8 +102,7 @@ function clean_html( $text )
 
 # ----------------------------------------------------
 
-class MyDate
-{
+class MyDate {
 	public $curyear;
 	public $year;
 	public $month;
@@ -141,8 +140,6 @@ class MyDate
 		$disp_label = !is_null($this->label) ? 
 			ucfirst($this->label) . ' ' : '';
 
-		// #!# add label to the forms...
-
 		# create day drop-down
 		$days = '';
 		for ( $i=1; $i<=31; $i++ ) {
@@ -175,12 +172,7 @@ EOHTML;
 	}
 }
 
-class BOADoc
-{
-}
-
-class Committee extends BOADoc
-{
+class Committee {
 	public $cnum;
 
 	# Committee
@@ -245,8 +237,25 @@ class Committee extends BOADoc
 	}
 }
 
-class Agreement extends BOADoc
-{
+/**
+ * Parent class to both Agreements and Minutes
+ */
+class BOADoc {
+	protected $mysql;
+
+	public function __construct() {
+		global $HDUP;
+
+		require_once 'logic/mysql_api.php';
+		$this->mysql = new MysqlApi($HDUP['host'], $HDUP['database'],
+			$HDUP['user'], $HDUP['password']);
+	}
+}
+
+/**
+ * Agreements
+ */
+class Agreement extends BOADoc {
 	public $doc_type = 'agreement';
 	public $id = null;
 	public $title = null;
@@ -268,6 +277,8 @@ class Agreement extends BOADoc
 	function __construct( $i='', $t='', $s='', $f='', $b='', $c='', 
 			$p='', $c_id='', $D='', $sb=0, $x='', $wp=false )
 	{
+		parent::__construct();
+
 		$this->id = $i + 0;
 		$this->title = $t;
 		$this->summary = $s;
@@ -609,8 +620,10 @@ EOHTML;
 
 		$type = '';
 		if (( $update ) && ( is_numeric( $this->id ))) {
+
 			$type = 'updated';
-			$Info = array( 'title="' . clean_html( $this->title ) . '"',
+			$Info = array(
+				'title="' . clean_html( $this->title ) . '"',
 				'summary="' . clean_html( $this->summary ) . '"',
 				'full="' . clean_html( $this->full ) . '"',
 				'background="' . clean_html( $this->background ) . '"',
@@ -622,6 +635,7 @@ EOHTML;
 				'expired="' . intval( $this->expired ) . '"',
 				'world_public=' . (( $this->world_public ) ? 1 : 0 )
 			);
+			$this->updateRevision();
 			$condition = "where id=$this->id";
 			$success = my_update( $G_DEBUG, $HDUP, 'agreements', 
 				$Info, $condition );
@@ -657,9 +671,8 @@ EOHTML;
 			$this->id = $Max[0]['max'];
 		}
 
-		$server_path = SERVER_PATH;
 		$msg = <<<EOHTML
-{$type} agreement http://{$server_path}/?id=agreement&num={$this->id}
+{$type} agreement http://{$_SERVER['SERVER_NAME']}/?id=agreement&num={$this->id}
 
 Title: {$this->title}
 Summary: {$this->summary}
@@ -684,6 +697,34 @@ EOHTML;
 		}
 
 		$this->display( 'document' );
+	}
+
+	/**
+	 * On update, save the previous version of this document into a separate
+	 * table for auditing purposes.
+	 *
+	 * @return boolean If TRUE, then the update save was successful.
+	 */
+	function updateRevision() {
+		// first, find out if there are previous "old" versions of this
+		// agreement, and grab the latest sub-ID.
+		$sql = <<<EOSQL
+
+			SELECT agr_version_num
+				FROM agreements_versions
+				WHERE agr_id={$this->id}
+					ORDER BY agr_version_num DESC limit 1;
+EOSQL;
+		$prev_sub_id_info = $this->mysql->get($sql, 'agr_version_num');
+		$cur_sub_id = empty($prev_sub_id_info) ? 1 :
+			array_shift(array_keys($prev_sub_id_info)) + 1;
+
+		$sql = <<<EOSQL
+			INSERT INTO agreements_versions
+				SELECT '', NOW(), {$cur_sub_id}, agreements.* from agreements
+				WHERE id={$this->id};
+EOSQL;
+		return (!is_null($this->mysql->query($sql)));
 	}
 
 	# agreement
@@ -727,8 +768,10 @@ EOHTML;
 	}
 }
 
-class Minutes
-{
+/**
+ * Minutes
+ */
+class Minutes extends BOADoc {
 	public $doc_type = 'minutes';
 	public $m_id = 0;
 	public $notes = null;
@@ -743,6 +786,8 @@ class Minutes
 	# minutes
 	function __construct( $m='', $n='', $a='', $c='', $c_id='', $D='' )
 	{
+		parent::__construct();
+
 		$this->notes = clean_html($n);
 		$this->agenda = clean_html($a);
 		$this->content = clean_html($c);
