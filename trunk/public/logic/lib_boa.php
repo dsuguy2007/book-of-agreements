@@ -263,7 +263,7 @@ class Committee {
 class BOADoc {
 	var $mysql;
 
-	public function BOADoc() {
+	function BOADoc() {
 		global $HDUP;
 
 		require_once 'logic/mysql_api.php';
@@ -954,12 +954,12 @@ EOHTML;
 			$link = <<<EOHTML
 				<div class="actions">
 					<a href="?id=admin&amp;doctype=minutes&amp;num={$this->m_id}">
-						<img class="tango" src="/display/images/tango/32x32/apps/accessories-text-editor.png" border="0" alt="edit" />
+						<img class="tango" src="display/images/tango/32x32/apps/accessories-text-editor.png" border="0" alt="edit" />
 						edit
 					</a>
 					&nbsp;&nbsp;
 					<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->m_id}">
-						<img class="tango" src="/display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete">
+						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete">
 						delete
 						</a>
 				</div>
