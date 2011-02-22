@@ -3,19 +3,19 @@
  * Database connection and interaction library
  */
 class MysqlApi {
-	private $host;
-	private $database;
-	private $user;
-	private $password;
+	var $host;
+	var $database;
+	var $user;
+	var $password;
 
-	private $link;
+	var $link;
 
 	/**
 	 * Construct a new connection object.
 	 *
 	 * @param[in] host string The hostname of the database server.
 	 */
-	public function __construct($host='localhost', $database, $user='nobody',
+	function MysqlApi($host='localhost', $database, $user='nobody',
 		$password) {
 
 		if ( !extension_loaded( 'mysql' )) {
@@ -36,7 +36,7 @@ class MysqlApi {
 	 * @return boolean. If TRUE, then the connection either previously existed,
 	 *     or was established properly.
 	 */
-	public function connect()
+	function connect()
 	{
 		if (!is_null($this->link)) {
 			return TRUE;
