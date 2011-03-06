@@ -129,7 +129,10 @@ EOSQL;
 		$Info = my_getInfo( $G_DEBUG, $HDUP, $sql_a, '', 'id' );
 		$ak = array_keys($Info);
 		foreach( array_keys($Info) as $id) {
-			$Found[] = new Agreement( $id );
+			$agr = new Agreement();
+			$agr->setId($id);
+			$agr->loadById();
+			$Found[] = $agr;
 		}
 	}
 

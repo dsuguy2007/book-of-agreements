@@ -1,5 +1,5 @@
 <?php
-	if ( !isset( $_GET['num'] )) {
+	if (!isset( $_GET['num']) || (intval($_GET['num']) == 0)) {
 		$max = 100;
 		$show = '';
 		$show_exp = false;
@@ -15,12 +15,18 @@
 	}
 	else
 	{
-		$num = intval( $_GET['num'] );
 		$Date = new MyDate( ); 
-		$Agrms = new Agreement( $num );
-		$Cmty = new Committee( );
+		$Agrms = new Agreement();
 		$title .= ": {$Agrms->title} [Agreement]";
 
 		$body = 'logic/agreement.php';
+
+		$use_jquery = TRUE;
+		$jquery_code = <<<EOJS
+			jQuery('#versions_reveal a.show, #versions a.hide').click(function() {
+				jQuery('#versions_reveal').toggle();
+				jQuery('#versions').toggle();
+			});
+EOJS;
 	}
 ?>

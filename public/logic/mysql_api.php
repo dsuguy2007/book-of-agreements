@@ -83,8 +83,10 @@ class MysqlApi {
 	 * @param[in] query string A SQL command to be executed.
 	 * @param[in] primary_key string (optional, defaults to NULL). If supplied,
 	 *     then the results should be indexed by the value found in this column.
+	 * @param[in] do_stripslashes boolean (default TRUE). If TRUE, then apply
+	 *     stripslashes to the returned output.
 	 */
-	function get($query, $primary_key=NULL) {
+	function get($query, $primary_key=NULL, $do_stripslashes=TRUE) {
 		$found = array();
 
 		$result = $this->query($query);
@@ -93,8 +95,16 @@ class MysqlApi {
 		}
 
 		while($info = mysql_fetch_array($result, MYSQL_ASSOC)) {
-			$key = is_null($primary_key) ? NULL : $info[$primary_key];
-			$found[$key] = $info;
+			if ($do_stripslashes) {
+				$info = array_map('stripslashes', $info);
+			}
+
+			if (is_null($primary_key)) {
+				$found[] = $info;
+			}
+			else {
+				$found[$info[$primary_key]] = $info;
+			}
 		}
 
 		return $found;

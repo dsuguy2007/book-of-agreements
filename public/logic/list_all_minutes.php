@@ -39,7 +39,8 @@ EOHTML;
 			$even_row = false;
 			foreach( $All as $num=>$Item )
 			{
-				$name = $Cmty->getName( $Item['cid'] );
+				$Cmty->setId($Item['cid']);
+				$name = $Cmty->getName();
 				$notes = stripslashes( $Item['notes'] );
 				$bgcolor = ($even_row) ? ' bgcolor="#eeeeee"' : '';
 

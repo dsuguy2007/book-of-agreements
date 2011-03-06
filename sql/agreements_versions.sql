@@ -2,6 +2,7 @@ CREATE TABLE `agreements_versions` (
   `vers_id` int(6) NOT NULL auto_increment,
   `updated_date` datetime default NULL,
   `agr_version_num` int(6) NOT NULL,
+  `diff_comment` text,
   `agr_id` int(6) NOT NULL,
   `title` text,
   `summary` text,

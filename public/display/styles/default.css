@@ -5,9 +5,6 @@ body {
 	font-size: 12px;
 	color: #663300;
 	line-height: 14pt;
-
-	/* to easily and visually denote development site */
-	background-image: url('/display/images/dev_bground.gif');
 }
 
 a:link {
@@ -31,13 +28,6 @@ h1 img {
 
 img.titlephoto {
 	margin-left: 10px;
-}
-
-#search_input {
-	background-image: url('/display/images/tango/16x16/actions/system-search.png');
-	background-repeat: no-repeat;
-	background-position: 100% 2px;
-	height: 17px;
 }
 
 .error, p .error {
@@ -165,12 +155,34 @@ span.date {
 }
 
 /* for expired and surpassed notices */
-#content p.notice {
+#content .notice, #versions, #versions_reveal {
 	margin-bottom: 15px;
 	padding: 10px;
 	background: #99ff00;
 	color: #000000;
 	font-size: 14px;
+}
+
+#versions, #versions_reveal {
+	background: #dfc;
+	color: #652;
+	font-size: 11px;
+	border-bottom: 1px solid #cb9;
+	margin-bottom: 0;
+}
+
+#versions img, #versions_reveal img {
+	vertical-align: middle;
+}
+
+.no_difference {
+	margin: 30px;
+	background: #87CF23;
+	border: 1px solid #549c10;
+	padding: 30px;
+	color: #333;
+	font-size: 18px;
+	font-weight: bold;
 }
 
 #content h2 {
@@ -280,19 +292,21 @@ div.minutes {
 	margin: 15px 0px 15px 0px;
 }
 
-#login {
+#login, #logout {
 	font-size: 20px;
 	font-weight: bold;
 	position: absolute;
-	top: 30px;
+	top: 25px;
 	right: 28px;
 	background-color: #FB9A54;
-	padding: 7px;
+	padding: 8px;
+	padding-right: 10px;
+	border: 1px solid #cc7d44;
 }
 
-#login a {
+#login a, #logout a {
 	text-decoration: none;
-	color: #000000;
+	color: #000;
 }
 
 .explanation {
@@ -324,4 +338,27 @@ div.minutes {
 	margin-top: 10px;
 	padding: 0px;
 	padding-bottom: 3px;
+}
+
+#diff {
+	white-space: pre;
+	background: #fff;
+	padding: 5px;
+	border: 1px solid #999;
+	color: #333;
+	font-family: courier, monospace;
+}
+
+.diff_added, .diff_removed {
+	margin: 0;
+}
+
+.diff_added {
+	color: #000;
+	background: #FB9A54;
+}
+
+.diff_removed {
+	color: #666;
+	background: #ddd;
 }

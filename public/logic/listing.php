@@ -8,13 +8,13 @@
 
 	if ( isset( $sub_cmty_num ) && is_int( $sub_cmty_num ))
 	{
-		$Cmty = new Committee( $sub_cmty_num );
-		$title = $Cmty->getName( $sub_cmty_num );
+		$Cmty = new Committee($sub_cmty_num);
+		$title = $Cmty->getName();
 	}
 	elseif ( isset( $cmty_num ) && is_int( $cmty_num ))
 	{
-		$Cmty = new Committee( $cmty_num );
-		$title = $Cmty->getName( $cmty_num );
+		$Cmty = new Committee($cmty_num);
+		$title = $Cmty->getName();
 	}
 
 	$link = "?id=$id";
@@ -148,7 +148,7 @@ EOHTML;
 
 				$cmty_name = '';
 				if ( !isset( $cmty_num ))
-				{ $cmty_name = ' &nbsp; [' . $Cmty->getName( $Cmty->cnum ) . ']'; }
+				{ $cmty_name = ' &nbsp; [' . $Cmty->getName() . ']'; }
 
 				$agr_title = nl2br( stripslashes( $Agreement['title'] ));
 				$Items[] = <<<EOHTML
