@@ -31,7 +31,7 @@
 		to share with the public. We hope this may help other
 		communities, or educate prospective
 		members. Also, this web application software is <a
-		href="http://sourceforge.net/projects/agreements/">available
+		href="http://code.google.com/p/book-of-agreements/">available
 		for download</a> under an open source license.
 		</p>
 		</div>
@@ -117,7 +117,8 @@ EOHTML;
 				
 			$even_row = false;
 			foreach( $All as $num=>$Item ) {
-				$name = $Cmty->getName( $Item['cid'] );
+				$Cmty->setId($Item['cid']);
+				$name = $Cmty->getName();
 				$title = stripslashes( $Item['title'] );
 				$bgcolor = ($even_row) ? ' bgcolor="#eeeeee"' : '';
 

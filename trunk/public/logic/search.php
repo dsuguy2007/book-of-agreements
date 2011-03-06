@@ -54,8 +54,7 @@ EOHTML;
 	if ( !$num_matches ) {
 		echo '<p class="highlight">No results found.</p>';
 	}
-	else
-	{
+	else {
 		foreach( $Found as $doc ) {
 			$doc->display('search');
 		}

@@ -48,69 +48,104 @@ function format_email( $s ) {
 	return stripslashes($s);
 }
 
-# clean up user-supplied input
-function clean_html( $text )
-{
-	if ($text == '') {
-		return '';
-	}
+/**
+ * Clean up user-supplied input, replacing certain characters for others within
+ * the first 128 ascii characters.
+ *
+ * @param[in] str string input string to be sanitized
+ * @return string the sanitized input
+ */
+function clean_html($str) { 
+    # Quotes cleanup 
+    $str = str_replace( chr(ord("`")), "'", $str );        # ` 
+    $str = str_replace( chr(ord("´")), "'", $str );        # ´ 
+    $str = str_replace( chr(ord("„")), ",", $str );        # „ 
+    $str = str_replace( chr(ord("`")), "'", $str );        # ` 
+    $str = str_replace( chr(ord("´")), "'", $str );        # ´ 
+    $str = str_replace( chr(ord("“")), "\"", $str );        # “ 
+    $str = str_replace( chr(ord("”")), "\"", $str );        # ” 
+    $str = str_replace( chr(ord("´")), "'", $str );        # ´ 
 
-	$Bad = array( 
-		128 => 1,
-		131 => 1,
-		162 => 1,
-		175 => 1,
-		189 => 1,
-		191 => 1,
-		194 => 1,
-		195 => 1,
-		226 => 1
-	);
+    $unwanted_array = array(
+		'Š'=>'S',
+		'š'=>'s',
+		'Ž'=>'Z',
+		'ž'=>'z',
+		'À'=>'A',
+		'Á'=>'A',
+		'Â'=>'A',
+		'Ã'=>'A',
+		'Ä'=>'A',
+		'Å'=>'A',
+		'Æ'=>'A',
+		'Ç'=>'C',
+		'È'=>'E',
+		'É'=>'E',
+		'Ê'=>'E',
+		'Ë'=>'E',
+		'Ì'=>'I',
+		'Í'=>'I',
+		'Î'=>'I',
+		'Ï'=>'I',
+		'Ñ'=>'N',
+		'Ò'=>'O',
+		'Ó'=>'O',
+		'Ô'=>'O',
+		'Õ'=>'O',
+		'Ö'=>'O',
+		'Ø'=>'O',
+		'Ù'=>'U',
+		'Ú'=>'U',
+		'Û'=>'U',
+		'Ü'=>'U',
+		'Ý'=>'Y',
+		'Þ'=>'B',
+		'ß'=>'Ss',
+		'à'=>'a',
+		'á'=>'a',
+		'â'=>'a',
+		'ã'=>'a',
+		'ä'=>'a',
+		'å'=>'a',
+		'æ'=>'a',
+		'ç'=>'c',
+		'è'=>'e',
+		'é'=>'e',
+		'ê'=>'e',
+		'ë'=>'e',
+		'ì'=>'i',
+		'í'=>'i',
+		'î'=>'i',
+		'ï'=>'i',
+		'ð'=>'o',
+		'ñ'=>'n',
+		'ò'=>'o',
+		'ó'=>'o',
+		'ô'=>'o',
+		'õ'=>'o',
+		'ö'=>'o',
+		'ø'=>'o',
+		'ù'=>'u',
+		'ú'=>'u',
+		'û'=>'u',
+		'ý'=>'y',
+		'ý'=>'y',
+		'þ'=>'b',
+		'ÿ'=>'y',
+	); 
+    $str = strtr($str, $unwanted_array); 
 
-	$lsq = chr(152);
-	$rsq = chr(153);
-	$ldq = chr(156);
-	$rdq = chr(157);
-	$dash = chr(147);
+    # Bullets, dashes, and trademarks 
+    $str = str_replace( chr(149), "&#8226;", $str );   # bullet • 
+    $str = str_replace( chr(150), "&ndash;", $str );   # en dash 
+    $str = str_replace( chr(151), "&mdash;", $str );   # em dash 
+    $str = str_replace( chr(153), "&#8482;", $str );   # trademark 
+    $str = str_replace( chr(169), "&copy;", $str );    # copyright mark 
+    $str = str_replace( chr(174), "&reg;", $str );     # registration mark 
 
-	# strip out any "smart quotes"
-	// PHP5: $Chars = str_split($text);
-
-	// The PHP4 way:
-	$changed = str_replace(' ', '~', $text);
-	$tmp = wordwrap($changed, 1, "\n", TRUE);
-	$Chars = explode("\n", $tmp);
-
-	$replaced = array();
-	foreach($Chars as $c) {
-		// more PHP4:
-		if ($c == '~') {
-			$c = ' ';
-		}
-
-		if (isset($Bad[ord($c)])) {
-			$c = '';
-			continue;
-		}
-
-		switch($c) {
-			# single quotes
-			case $lsq:
-			case $rsq: $c = "'"; break;
-
-			# double quotes
-			case $ldq:
-			case $rdq: $c = '"'; break;
-
-			# long dash
-			case $dash: $c = '-'; break;
-		}
-		$replaced[] = $c;
-	}
-	$text = htmlentities(implode('', $replaced));
-
-	return $text;
+    return $str; 
 }
+
 
 
 # ----------------------------------------------------
@@ -154,8 +189,6 @@ class MyDate
 		$disp_label = !is_null($this->label) ? 
 			ucfirst($this->label) . ' ' : '';
 
-		// #!# add label to the forms...
-
 		# create day drop-down
 		$days = '';
 		for ( $i=1; $i<=31; $i++ ) {
@@ -190,11 +223,17 @@ EOHTML;
 
 class Committee {
 	var $cnum;
+	var $cid;
 
 	# Committee
-	function Committee( $n='' )
-	{
-		$this->cnum = $n;
+	function Committee( $id='' ) {
+		if ($id != '') {
+			$this->setId($id);
+		}
+	}
+
+	function setId($cid) {
+		$this->cid = $cid;
 	}
 
 	# Committee
@@ -233,16 +272,16 @@ class Committee {
 	}
 
 	# Committee
-	function getName( $id=NULL )
-	{
-		if (is_null($id)) {
-			$id = $this->cnum;
+	function getName() {
+		if (is_null($this->cid)) {
+			return;
 		}
 
 		global $Cmtys;
 		global $SubCmtys;
 		$name = '';
 
+		$id = $this->cid;
 		if ( isset( $Cmtys[$id] )) {
 			return $Cmtys[$id];
 		}
@@ -252,7 +291,9 @@ class Committee {
 			}
 		}
 
-		echo '<div class="error">Error! Could not find requested record</div>' . "\n";
+		echo <<<EOHTML
+			<div class="error">Error! Could not find requested committee</div>
+EOHTML;
 		exit;
 	}
 }
@@ -262,6 +303,9 @@ class Committee {
  */
 class BOADoc {
 	var $mysql;
+	var $cmty;
+
+	var $is_print_version = FALSE;
 
 	function BOADoc() {
 		global $HDUP;
@@ -269,6 +313,11 @@ class BOADoc {
 		require_once 'logic/mysql_api.php';
 		$this->mysql = new MysqlApi($HDUP['host'], $HDUP['database'],
 			$HDUP['user'], $HDUP['password']);
+
+		$this->cmty = new Committee();
+
+		global $print_version;
+		$this->is_print_version = $print_version;
 	}
 }
 
@@ -294,16 +343,49 @@ class Agreement extends BOADoc
 	var $world_public = false;
 	var $found_summary = false;
 
-	# agreement
-	function Agreement( $i='', $t='', $s='', $f='', $b='', $c='', 
-			$p='', $c_id='', $D='', $sb=0, $x='', $wp=false )
-	{
-		parent::BOADoc();
+	var $diff_comments;
+	var $previous_versions;
 
-		$this->id = $i + 0;
+	# agreement
+	function Agreement() {
+		parent::BOADoc();
+		$this->Date = new MyDate();
+		$this->processRequest();
+	}
+
+	/**
+	 * Process input from the POST.
+	 */
+	function processRequest() {
+		if (isset($_REQUEST['num'])) {
+			$this->id = intval($_REQUEST['num']);
+
+			# if potentially valid id num
+			if ( $this->id > 0) {
+				$this->loadById( );
+			}
+		}
+
+		if (isset($_REQUEST['diff_comments'])) {
+			$this->diff_comments = mysql_real_escape_string(
+				$_REQUEST['diff_comments']);
+		}
+	}
+
+	function setId($id) {
+		$this->id = $id;
+	}
+
+	function setContent($t='', $s='', $f='', $b='', $c='', 
+			$p='', $c_id='', $D='', $sb=0, $x='', $wp=false ) {
 		$this->title = $t;
 		$this->summary = $s;
+
+		$f = str_replace('\r\n', "\n", $f);
+		$f = str_replace('\n', "\n", $f);
+		$f = str_replace('\r', "\n", $f);
 		$this->full = $f;
+
 		$this->background = $b;
 		$this->comments = $c;
 		$this->processnotes = $p;
@@ -317,22 +399,24 @@ class Agreement extends BOADoc
 			$this->Date = new MyDate( );
 		}
 
-		# if potentially valid id num
-		if ( $this->id > 0 && !$this->isValid( )) {
-			$this->constructFromId( );
+		if ($c_id != '') {
+			$this->cmty->setId($c_id);
 		}
 	}
 
+	function getId() {
+		return $this->id;
+	}
+
 	# agreement
-	function constructFromId( )
-	{
+	function loadById( ) {
 		global $PUBLIC_USER;
-	
-		if (!is_int($this->id)) {
-			syslog('constructFromId was called with an invalid ID');
+
+		if (!is_numeric($this->id)) {
+			error_log("loadById was called with an invalid ID: {$this->id}");
 			exit;
 		}
-		
+
 		global $HDUP;
 		global $G_DEBUG;
 		$entryDate = new MyDate( );
@@ -356,49 +440,52 @@ FROM [table_name] WHERE ( MATCH(title,text) AGAINST ('+term +term2' IN BOOLEAN
 MODE) ) HAVING relevance > 0 ORDER BY relevance DESC;
 */
 
-		$Agrm = my_getInfo( $G_DEBUG, $HDUP, $sql.$pub_constraint );
-		if ( empty( $Agrm )) {
+		$data = my_getInfo( $G_DEBUG, $HDUP, $sql.$pub_constraint );
+		if ( empty( $data )) {
 			if ( $PUBLIC_USER ) {
 				if (attempt_login()) {
 					# run the query again, without the constraint
-					$Agrm = my_getInfo( $G_DEBUG, $HDUP, $sql );
+					$data = my_getInfo( $G_DEBUG, $HDUP, $sql );
 				}
 				else {
-					return;
+					return FALSE;
 				}
 			}
 		}
+		$data = array_pop($data);
 
 		# if still empty... then punt
-		if ( empty( $Agrm )) {
-			return;
+		if ( empty( $data )) {
+			return FALSE;
 		}
 
-		$entryDate->setDate( $Agrm[0]['date'] );
-		$this->Agreement(
-			$Agrm[0]['id'],
-			$Agrm[0]['title'],
-			$Agrm[0]['summary'],
-			$Agrm[0]['full'],
-			$Agrm[0]['background'],
-			$Agrm[0]['comments'],
-			$Agrm[0]['processnotes'],
-			$Agrm[0]['cid'],
+		$entryDate->setDate( $data['date'] );
+		$this->setContent(
+			$data['title'],
+			$data['summary'],
+			$data['full'],
+			$data['background'],
+			$data['comments'],
+			$data['processnotes'],
+			$data['cid'],
 			$entryDate,
-			$Agrm[0]['surpassed_by'],
-			$Agrm[0]['expired'],
-			$Agrm[0]['world_public']
+			$data['surpassed_by'],
+			$data['expired'],
+			$data['world_public']
 		);
 	}
 
-	# agreement
+	/**
+	 * Validate the content for this agreement.
+	 */
 	function isValid( )
 	{
-		# don't look for an id
-		if ( empty( $this->title ) || empty( $this->full )) {
-			return false;
+		if (($this->id != 0) && empty($this->diff_comments)) {
+			return FALSE;
 		}
-		return true;
+
+		# don't look for an id, allowing for "add"
+		return (!empty($this->title) && !empty($this->full));
 	}
 
 	function actionChoices( )
@@ -425,10 +512,61 @@ MODE) ) HAVING relevance > 0 ORDER BY relevance DESC;
 EOHTML;
 	}
 
-	# agreement
+	/**
+	 * Used for generating diffs.
+	 */
+	function getTextVersion() {
+		global $sub_summary_length;
+		$short = '';
+		$surpassed_by = intval( $this->surpassed_by );
+		$expired = intval( $this->expired );
+		$pub = ( $this->world_public ) ? ' checked="checked"' : '';
+		$date = $this->Date->toString( );
+
+		$cmty_name = $this->cmty->getName();
+
+		$out = '';
+		if ( !empty( $this->summary )) {
+			$out .= "Summary:\n{$this->summary}\n";
+		}
+		if ( !empty( $this->background )) {
+			$out .= "Background:\n" . 
+				wordwrap($this->background, 80, "\n");
+		}
+		if ( !empty( $this->full )) {
+			$out .= "Proposal:\n" . 
+				wordwrap($this->full, 80, "\n");
+		}
+		if ( !empty( $this->comments )) {
+			$out .= "Comments:\n" . 
+				wordwrap($this->comments, 80, "\n");
+		}
+		if ( !empty( $this->processnotes )) {
+			$out .= "Process Comments:\n" .
+				wordwrap($this->processnotes, 80, "\n");
+		}
+
+		return <<<EOTXT
+Title: {$this->title}
+Committee: {$cmty_name}
+Date: {$date}
+{$out}
+
+EOTXT;
+	}
+
+
+	/**
+	 * Display the document in the format specified.
+	 *
+	 * @param[in] type string (default: document) specifies the output
+	 * format. Possible options would be:
+	 *     - form, the edit form
+	 *     - search, display search results
+	 *     - document, display full document for html presentation
+	 */
 	function display( $type='document' )
 	{
-		global $Cmty;
 		global $sub_summary_length;
 		$admin_info = $this->adminActions( );
 		$short = '';
@@ -474,6 +612,14 @@ EOHTML;
 				$comments = format_html( $this->comments, true );
 				$processnotes = format_html( $this->processnotes, true );
 
+				$diff_comments = '';
+				if ($this->id != 0) {
+					$diff_comments = <<<EOHTML
+						<h3>Diff comments:</h3>
+						<input type="text" name="diff_comments" value="" size="70">
+EOHTML;
+				}
+
 				echo <<<EOHTML
 				<p>
 					Make this agreement public to the world:
@@ -481,7 +627,9 @@ EOHTML;
 				</p>
 
 				<h3>Title:</h3>
-				<input type="text" name="title" value="{$title}" size="50" />
+				<input type="text" name="title" value="{$title}" size="70" />
+
+				{$diff_comments}
 
 				<h3>Summary:</h3>
 				<textarea name="summary" cols="85" rows="3">{$summary}</textarea>
@@ -496,7 +644,7 @@ EOHTML;
 				<h3>Comments:</h3>
 				<textarea name="comments" cols="85" rows="5">{$comments}</textarea>
 
-				<h3>Process Comments:</h3>
+				<h3>Process Notes:</h3>
 				<textarea name="processnotes" cols="85" 
 					rows="3">{$processnotes}</textarea>
 EOHTML;
@@ -510,16 +658,13 @@ EOHTML;
 						$short .= "<br/>SUMMARY: $summary\n";
 					}
 				}
-
-			case 'summary':
-
-				if ( empty( $short )) {
+				else {
 					$short = !empty($summary) ? $summary :
 						substr( $full, 0, $sub_summary_length ) . '...';
 				}
 
 				$date = $this->Date->toString( );
-				$cmty_name = $Cmty->getName( $this->cid );
+				$cmty_name = $this->cmty->getName();
 
 				echo <<<EOHTML
 					<div class="agreement">
@@ -538,30 +683,35 @@ EOHTML;
 				break;
 
 			case 'document':
-				global $PUBLIC_USER;
-				global $print_version;
+				// only show previous version disply with full document display
+				$condition .= $this->displayPreviousVersions();
 
 				$print_ver_label = '';
 				$print_ver_dest = '';
-				if ( !$PUBLIC_USER ) {
+				$cur_date = '';
+				if (!$this->is_print_version) {
 					$print_ver_label = <<<EOHTML
 						<img class="tango" src="display/images/tango/32x32/devices/printer.png" border="0" alt="print">
 						format for printing
 EOHTML;
 					$print_ver_dest = $_SERVER['QUERY_STRING'] . '&amp;print=1';
-					if ( $print_version ) {
-						$print_ver_label = <<<EOHTML
-							<img class="tango" src="display/images/tango/32x32/mimetypes/text-html.png" border="0" alt="full page">
-							return to full page
+				}
+				else {
+					$print_ver_label = <<<EOHTML
+						<img class="tango" src="display/images/tango/32x32/mimetypes/text-html.png" border="0" alt="full page">
+						return to full page
 EOHTML;
-						$print_ver_dest = str_replace( '&amp;print=1', '',
-							$_SERVER['QUERY_STRING'] );
-					}
+					$print_ver_dest = str_replace( '&print=1', '',
+						$_SERVER['QUERY_STRING'] );
+					$print_ver_dest = str_replace( '&amp;print=1', '',
+						$print_ver_dest);
+
+					$cur_date = '<p>As of: ' . date('r') . '</p>';
 				}
 
 				$date = $this->Date->toString( );
 
-				$cmty_name = $Cmty->getName( $this->cid );
+				$cmty_name = $this->cmty->getName();
 				$content = '';
 
 				if ( !empty( $summary )) {
@@ -593,12 +743,94 @@ EOHTML;
 							{$content}
 						</div>
 					</div>
+					{$cur_date}
 EOHTML;
 
 				break;
 		}
 
 		return 1;
+	}
+
+	/**
+	 * Load the previous agreement version info from the database.
+	 */
+	function loadPreviousVersions() {
+		if (is_null($this->id)) {
+			return FALSE;
+		}
+
+		$sql = <<<EOSQL
+			SELECT agr_version_num, updated_date, diff_comment
+				FROM agreements_versions
+				WHERE agr_id={$this->id}
+				ORDER BY agr_version_num desc;
+EOSQL;
+		$this->previous_versions = $this->mysql->get($sql);
+	}
+
+	/**
+	 * If this agreement has previous versions, then display them.
+	 * @return string html to be displayed. If no previous versions, then
+	 *     return NULL.
+	 */
+	function displayPreviousVersions() {
+		if ($this->is_print_version) {
+			return NULL;
+		}
+
+		$this->loadPreviousVersions();
+		if (empty($this->previous_versions)) {
+			return NULL;
+		}
+
+		$out = '';
+		foreach($this->previous_versions as $entry) {
+			$out .= <<<EOHTML
+				<tr>
+					<td>{$entry['agr_version_num']}</td>
+					<td>
+						<a href="?id=previous_version&agr_id={$this->id}&prev_id={$entry['agr_version_num']}">
+							view diff</a>
+					</td>
+					<td>{$entry['diff_comment']}</td>
+					<td>{$entry['updated_date']}</td>
+				</tr>
+EOHTML;
+		}
+
+		$display_show_diffs = '';
+		$display_diff_list = ' style="display: none;"';
+		if (isset($_GET['expand_diffs'])) {
+			$display_show_diffs = ' style="display: none;"';
+			$display_diff_list = '';
+		}
+
+		$num_diffs = count($this->previous_versions);
+		return <<<EOHTML
+			<div id="versions_reveal"{$display_show_diffs}>
+				<div>
+					<img src="display/images/tango/32x32/apps/preferences-system-windows.png" width="32" height="32">
+					<a href="#" class="show">[+] show {$num_diffs} previous versions</a>
+				</div>
+			</div>
+			<div id="versions"{$display_diff_list}>
+				<div>
+					<img src="display/images/tango/32x32/apps/preferences-system-windows.png" width="32" height="32">
+					<a href="#" class="hide">[-] hide {$num_diffs} previous versions</a>
+				</div>
+				<p>The following dates are when they became obsolete.</p>
+				<table cellpadding="3">
+					<tr>
+						<th>version</th>
+						<th></th>
+						<th>diff comment</th>
+						<th>obsoleted date</th>
+					</tr>
+					{$out}
+				</table>
+			</div>
+EOHTML;
 	}
 
 	# agreement
@@ -624,7 +856,12 @@ EOHTML;
 		return $link;
 	}
 
-	# agreement
+	/**
+	 * Save this agreement.
+	 * @param[in] update boolean (default false). If TRUE, then update an
+	 *     existing document. Otherwise, create a new one.
+	 * @return boolean. If true, then the save was successful.
+	 */
 	function save( $update=false )
 	{
 		global $HDUP;
@@ -636,9 +873,11 @@ EOHTML;
 
 		# check for required items
 		if ( !$this->isValid( )) {
-			echo '<div class="error">Missing content! <a href="javascript: ' .
-				'history.go(-1)">Back</a></div>' . "\n";
-			return;
+			echo <<<EOHTML
+				<div class="error">Missing content!
+					<a href="javascript: history.go(-1);">Back</a></div>
+EOHTML;
+			return FALSE;
 		}
 
 		$type = '';
@@ -665,7 +904,8 @@ EOHTML;
 		else {
 			$type = 'new';
 			// this is a new document
-			$Info = array( $this->id,
+			$Info = array(
+				$this->id,
 				clean_html( $this->title ),
 				clean_html( $this->summary ),
 				clean_html( $this->full ),
@@ -683,7 +923,7 @@ EOHTML;
 
         if ( !$success ) {
 			echo "Save didn't work\n";
-			return 0;
+			return FALSE;
 		}
 
 		# grab the newly inserted document's ID number
@@ -719,7 +959,13 @@ EOHTML;
 			echo '<p class="error">Could not send mail</p>' . "\n";
 		}
 
-		$this->display( 'document' );
+		echo <<<EOHTML
+			<script type="text/javascript">
+				window.location = "/?id=agreement&num={$this->id}";
+			</script>
+EOHTML;
+
+		return TRUE;
 	}
 
 	/**
@@ -732,7 +978,6 @@ EOHTML;
 		// first, find out if there are previous "old" versions of this
 		// agreement, and grab the latest sub-ID.
 		$sql = <<<EOSQL
-
 			SELECT agr_version_num
 				FROM agreements_versions
 				WHERE agr_id={$this->id}
@@ -744,20 +989,24 @@ EOSQL;
 
 		$sql = <<<EOSQL
 			INSERT INTO agreements_versions
-				SELECT '', NOW(), {$cur_sub_id}, agreements.* from agreements
+				SELECT '', NOW(), {$cur_sub_id}, '{$this->diff_comments}',
+					agreements.* from agreements
 				WHERE id={$this->id};
 EOSQL;
 		return (!is_null($this->mysql->query($sql)));
 	}
 
 	# agreement
-	function delete( $confirm )
-	{
+	function delete( ) {
 		global $Cmtys;
 		global $HDUP;
 		global $G_DEBUG;
 
-		if ( !$confirm ) {
+		if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+			$this->setId($_GET['delete']);
+		} 
+
+		if (!isset($_GET['confirm_del'])) { 
 			$date = $this->Date->toString( );
 			$title = format_html( $this->title, true );
 			echo <<<EOHTML
@@ -777,17 +1026,28 @@ EOSQL;
 				</div>
 				</form>
 EOHTML;
+			return FALSE;
 		}
-		else {
-			$HDUP['table'] = 'agreements';
-			$success = my_delete( $G_DEBUG, $HDUP, 'id', $this->id );
-			if ( $success ) {
-				echo "<p>Item deleted\n";
-			}
-			else {
-				echo '<div class="error">Error: Item was not deleted</div>' . "\n";
-			}
+
+		$HDUP['table'] = 'agreements';
+		$success = my_delete( $G_DEBUG, $HDUP, 'id', $this->id );
+		if ( !$success ) {
+			echo '<div class="error">Error: Item was not deleted</div>' . "\n";
+			return FALSE;
 		}
+
+		// also delete any related previous versions
+		$HDUP['table'] = 'agreements_versions';
+		$success = my_delete( $G_DEBUG, $HDUP, 'agr_id', $this->id );
+		if ( !$success ) {
+			echo <<<EOHTML
+				<div class="error">Error: Prior versions were not deleted</div>
+EOHTML;
+			return FALSE;
+		}
+
+		echo "<p>Item deleted</p>\n";
+		return TRUE;
 	}
 }
 
@@ -825,12 +1085,12 @@ class Minutes extends BOADoc {
 		if ( intval( $this->m_id ) > 0 ) {
 			# check to see if the required entries are valid
 			if ( empty( $this->agenda ) && empty( $this->content ))
-			{ $this->constructFromId( $this->m_id ); }
+			{ $this->loadById( $this->m_id ); }
 		}
 	}
 
 	# minutes
-	function constructFromId( $id='' )
+	function loadById( $id='' )
 	{
 		global $HDUP;
 		global $G_DEBUG;
@@ -853,9 +1113,8 @@ class Minutes extends BOADoc {
 	}
 
 	# minutes
-	function display( $type='document' ) 
+	function display( $type='document' )
 	{
-		global $Cmty;
 		global $sub_summary_length;
 		$admin_info = $this->adminActions( );
 		$short = '';
@@ -889,7 +1148,7 @@ class Minutes extends BOADoc {
 
 			case 'compact':
 				echo "<tr>\n" .
-					"\t<td>" . $Cmty->getName( $this->cid ) . "</td>\n" .
+					"\t<td>" . $this->cmty->getName() . "</td>\n" .
 					"\t<td>" . '<a href="?id=minutes&num=' . $this->m_id . '">' .
 						$this->Date->toString( ) . "</a></td>\n" . 
 					"\t<td>" . $notes . "</td>\n";
@@ -910,7 +1169,7 @@ class Minutes extends BOADoc {
 				{ $short = substr( $content, 0, $sub_summary_length ) . '...'; }
 
 				$date_string = $this->Date->toString( );
-				$cmty_name = $Cmty->getName( $this->cid );
+				$cmty_name = $this->cmty->getName();
 				echo <<<EOHTML
 					<div class="minutes">
 						<h2 class="mins">
@@ -927,7 +1186,7 @@ EOHTML;
 
 			case 'document':
 				echo '<div class="minutes">' . "\n" .
-					'<h1 class="mins">' . $Cmty->getName( $this->cid ) .
+					'<h1 class="mins">' . $this->cmty->getName() .
 					' minutes: ' . $this->Date->toString( ) . "</h1>\n" .
 					'<div class="info">' . $admin_info;
 
@@ -984,7 +1243,7 @@ EOHTML;
 				<div class="error">Missing content! 
 					<a href="javascript:history.go(-1)">Back</a></div>
 EOHTML;
-			return;
+			return FALSE;
 		}
 
 		# if an update then keep the id
@@ -1014,7 +1273,7 @@ EOHTML;
 
 		if ( !$success ) {
 			echo "Save didn't work\n";
-			return 0;
+			return FALSE;
 		}
 
 		if ( !is_int( $this->m_id )) {
@@ -1023,20 +1282,25 @@ EOHTML;
 			$this->m_id = $Max[0]['max'];
 		}
 
-		$this->display( 'document' );
+		echo <<<EOHTML
+			<script type="text/javascript">
+				window.location = "/?id=minutes&num={$this->m_id}";
+			</script>
+EOHTML;
+
+		return TRUE;
 	}
 
 	# minutes
 	function delete( $confirm )
 	{
-		global $Cmty;
 		global $HDUP;
 		global $G_DEBUG;
 
 		if ( !$confirm )
 		{
 			$date_string = $this->Date->toString( );
-			$cmty_name = $Cmty->getName( $this->cid );
+			$cmty_name = $this->cmty->getName();
 			echo <<<EOHTML
 			<div class="minutes">
 				<h2>Are you sure you want to delete these minutes?</h2>

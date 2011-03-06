@@ -16,7 +16,7 @@ width="400" height="72" />
 		&nbsp; <a href="?id=search">advanced search</a> &nbsp;
 		<a href="http://www.gocoho.org/wiki/index.php/BookofAgreements">request a feature or change</a>
 	</form>
-	<div id="login">
+	<div id="logout">
 		<img class="tango" src="display/images/tango/32x32/apps/internet-web-browser.png" alt="web browser icon" />
 		<a href="?login=0">Change to Public View</a>
 	</div>

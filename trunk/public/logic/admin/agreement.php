@@ -9,6 +9,7 @@
 	}
 
 	# receiving a post of editing agreement, new or old
+	$Agrms = new Agreement();
 	if ( isset( $_POST['admin_post'] )) {
 		$TempDate = new MyDate( intval( $_POST['year'] ), 
 			intval( $_POST['month'] ), intval( $_POST['day'] ));
@@ -22,8 +23,7 @@
 			$pub = true;
 		}
 
-		$Agrms = new Agreement(
-			intval( $_POST['num'] ),
+		$Agrms->setContent(
 			mysql_real_escape_string( $_POST['title'] ), 
 			mysql_real_escape_string( $_POST['summary'] ), 
 			mysql_real_escape_string( $_POST['full'] ), 
@@ -38,23 +38,16 @@
 		);
 		$update = true;
 	}
-	elseif ( $num > 0 ) {
-		# edit agreement, document number
-		$Agrms = new Agreement( $num );
-	}
-	else {
-		# first visit
-		$Agrms = new Agreement( );
-	}
 	$Cmty = new Committee( $Agrms->cid );
 
 	if ( isset( $_POST['save'] )) {
 		$Agrms->save( $update );
 	}
 	elseif( isset( $_GET['delete'] )) {
-		$Agrms->delete( $confirm_del );
+		$Agrms->delete();
 	}
 	else {
+		$num = $Agrms->getId();
 		if ( $num > 0 ) {
 			$update_string = 
 				'<input type="hidden" name="update" value="1" />' . "\n";
@@ -73,8 +66,11 @@ EOHTML;
 			$Cmty->selectCommittee( $Agrms->cid );
 		$Agrms->actionChoices( );
 		$Agrms->display( 'form' );
-		echo '<p><input type="submit" name="save" '.
-			'value="save changes &rarr;" />' . "</p></form>\n";
+
+		echo <<<EOHTML
+			<p><input type="submit" name="save" value="save changes &rarr;"></p>
+			</form>
+EOHTML;
 	}
 
 ?>

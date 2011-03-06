@@ -160,11 +160,12 @@
 			return 0;
 		}
 
-		$sql = "DELETE FROM $HDUP[table] WHERE $col='$val'";
+		$sql = "DELETE FROM {$HDUP['table']} WHERE {$col}='{$val}'";
         if ( $G_DEBUG[0] >= 3 ) { echo "<p>SQL: $sql</p>\n"; }
 
-		if ( empty( $link )) 
-		{ $link = my_connect( $G_DEBUG, $HDUP, $link ); }
+		if ( empty( $link )) {
+			$link = my_connect( $G_DEBUG, $HDUP, $link );
+		}
 		if ( empty( $link )) { return 0; }
 
 		$result = mysql_query( $sql );
