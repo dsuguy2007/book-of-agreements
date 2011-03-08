@@ -346,6 +346,11 @@ class Agreement extends BOADoc
 	var $diff_comments;
 	var $previous_versions;
 
+	var $diff_context = 5;
+
+	// agreement id, version
+	var $filename_format = '/tmp/book_of_agreements_%s_%s';
+
 	# agreement
 	function Agreement() {
 		parent::BOADoc();
@@ -900,6 +905,13 @@ EOHTML;
 			$condition = "where id=$this->id";
 			$success = my_update( $G_DEBUG, $HDUP, 'agreements', 
 				$Info, $condition );
+
+			# grab the newly inserted document's ID number
+			if ( !is_int( $this->id )) {
+				$sql = 'select max( id ) as max from agreements';
+				$Max = my_getInfo( $G_DEBUG, $HDUP, $sql );
+				$this->id = $Max[0]['max'];
+			}
 		}
 		else {
 			$type = 'new';
@@ -926,13 +938,15 @@ EOHTML;
 			return FALSE;
 		}
 
-		# grab the newly inserted document's ID number
-		if ( !is_int( $this->id )) {
-			$sql = 'select max( id ) as max from agreements';
-			$Max = my_getInfo( $G_DEBUG, $HDUP, $sql );
-			$this->id = $Max[0]['max'];
-		}
+		$this->sendEmail($type);
+		return TRUE;
+	}
 
+	/**
+	 * Send email notice of a new or updated agreement.
+	 * @param[in] type string ('new' or 'updated').
+	 */
+	function sendEmail($type) {
 		$msg = <<<EOHTML
 {$type} agreement http://{$_SERVER['SERVER_NAME']}/?id=agreement&num={$this->id}
 
@@ -957,6 +971,7 @@ EOHTML;
 
 		if (!$ret) {
 			echo '<p class="error">Could not send mail</p>' . "\n";
+			return FALSE;
 		}
 
 		echo <<<EOHTML
@@ -964,7 +979,6 @@ EOHTML;
 				window.location = "/?id=agreement&num={$this->id}";
 			</script>
 EOHTML;
-
 		return TRUE;
 	}
 
@@ -996,7 +1010,9 @@ EOSQL;
 		return (!is_null($this->mysql->query($sql)));
 	}
 
-	# agreement
+	/**
+	 * Delete the current agreement.
+	 */
 	function delete( ) {
 		global $Cmtys;
 		global $HDUP;
@@ -1048,6 +1064,134 @@ EOHTML;
 
 		echo "<p>Item deleted</p>\n";
 		return TRUE;
+	}
+
+	/**
+	 * Get the the diff text.
+	 *
+	 * @param[in] version int, the previous version of the document to
+	 *     use as a starting point to generate the diff.
+	 * @return string, HTML displaying the diff betweeen the versions.
+	 */
+	function getDiff($version) {
+		$prev_agreement = TRUE;
+		$older_filename = $this->loadDocByVersion($version, $prev_agreement);
+		$newer_filename = $this->loadDocByVersion($version + 1);
+
+		if (!file_exists($older_filename) || !file_exists($newer_filename)) {
+			return;
+		}
+
+		$diff = shell_exec("diff --unified={$this->diff_context} -b ".
+			"{$older_filename} {$newer_filename}");
+		if (empty($diff)) {
+			return <<<EOHTML
+		<div class="no_difference">
+			<img src="display/images/tango/32x32/actions/format-indent-more.png"
+				width="32" height="32"/>
+			<img src="display/images/tango/32x32/actions/format-indent-less.png"
+				width="32" height="32"/>
+			There was no difference between these file versions.
+		</div>
+EOHTML;
+		}
+
+		$out = $this->getDiffSummary($version, $prev_agreement);
+
+		$lines = explode("\n", $diff);
+		foreach($lines as $index=>&$l) {
+			if ((strpos($l, '---') === 0) ||
+				(strpos($l, '+++') === 0)) {
+				unset($lines[$index]);
+				continue;
+			}
+			$l = trim($l);
+			$l = str_replace('\r\n', "\n", $l);
+			$l = str_replace('\n', "\n", $l);
+			$l = str_replace('\r', "\n", $l);
+			$l = wordwrap($l, 90);
+
+			if (strpos($l, '-') === 0) {
+				$l = "<span class=\"diff_removed\">{$l}</span>";
+			}
+			else if (strpos($l, '+') === 0) {
+				$l = "<span class=\"diff_added\">{$l}</span>";
+			}
+		}
+		$diff = implode("\n", $lines);
+
+		return <<<EOHTML
+			{$out}
+			<div id="diff">{$diff}</div>
+EOHTML;
+	}
+
+	/**
+	 * Load the document at a specific version and display the summary info.
+	 *
+	 * @param[in,out] prev_agreement if set to NULL, this is ignored.
+	 *     Otherwise, contains the array of key-value pairs defining the
+	 *     previous version of the agreement.
+	 * @param[in] version int the previous version ID.
+	 * @return string The temp filename where the text-version of this document
+	 *     has been dumped to.
+	 */
+	function loadDocByVersion($version, &$prev_agreement=NULL) {
+		$sql = <<<EOSQL
+			SELECT * from agreements_versions where agr_id={$this->id}
+				AND agr_version_num={$version}
+EOSQL;
+		$data = $this->mysql->get($sql);
+		$a = array_pop($data);
+
+		// if this isn't a previous version, but the current one, then simply load
+		// the Agreement
+		if (empty($a)) {
+			$this->loadById();
+		}
+		else {
+			$this->setContent($a['title'], $a['summary'], $a['full'],
+				$a['background'], $a['comments'], $a['processnotes'],
+				$a['cid'], $a['date'], $a['surpassed_by'], $a['expired'],
+				$a['world_public']);
+
+			if (!is_null($prev_agreement)) {
+				$prev_agreement = $a;
+			}
+		}
+
+		$file = sprintf($this->filename_format, $this->id, $version);
+		file_put_contents($file, $this->getTextVersion());
+		return $file;
+	}
+
+	/**
+	 * Get the summary html for this diff.
+	 * @param[in] version int, the number of the previous version diff to
+	 *     reference.
+	 * @param[in] prev_agreement array of key-value pairs mapping the various
+	 *     table column fields to data in the previous agreement.
+	 */
+	function getDiffSummary($version, $prev_agreement=NULL) {
+		$prev = '';
+		if ($version > 1) {
+			$prev_ver = $version - 1;
+			$prev = <<<EOHTML
+				<a href="/?id=previous_version&agr_id={$this->id}&prev_id={$prev_ver}">
+					&larr; previous version ({$prev_ver})</a>
+EOHTML;
+		}
+
+		return <<<EOHTML
+			<h3>Diff summary for 
+				"<a href="/?id=agreement&amp;num={$this->id}&amp;expand_diffs=1">
+					{$prev_agreement['title']}</a>":</h3>
+			{$prev}
+			
+			<p>Updated: {$prev_agreement['updated_date']}
+			<br />Comment: {$prev_agreement['diff_comment']}
+			</p>
+EOHTML;
 	}
 }
 
