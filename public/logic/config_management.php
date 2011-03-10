@@ -90,7 +90,6 @@ function save_config_file() {
 	$config = <<<EOTXT
 <?php
 
-\$HOST_EMAIL = '';
 define('AUDIT_CONTACT', '');
 define('FROM_ADDRESS', '');
 define('SITE_NAME', '');
