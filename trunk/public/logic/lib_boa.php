@@ -395,13 +395,18 @@ class Agreement extends BOADoc
 		$this->comments = $c;
 		$this->processnotes = $p;
 		$this->cid = $c_id;
-		$this->Date = $D;
 		$this->surpassed_by = $sb;
 		$this->expired = $x;
 		$this->world_public = $wp;
 
 		if ( !is_object( $D )) {
 			$this->Date = new MyDate( );
+			if (is_string($D)) {
+				$this->Date->setDate($D);
+			}
+		}
+		else {
+			$this->Date = $D;
 		}
 
 		if ($c_id != '') {
@@ -518,37 +523,36 @@ EOHTML;
 	}
 
 	/**
-	 * Used for generating diffs.
+	 * Get a plain-text version of the document in order to generate a diff.
+	 *
+	 * @return string, the plain-text document.
 	 */
 	function getTextVersion() {
-		global $sub_summary_length;
-		$short = '';
-		$surpassed_by = intval( $this->surpassed_by );
-		$expired = intval( $this->expired );
-		$pub = ( $this->world_public ) ? ' checked="checked"' : '';
 		$date = $this->Date->toString( );
-
 		$cmty_name = $this->cmty->getName();
+
+		$xx = str_repeat('=', 60) . "\n";
 
 		$out = '';
 		if ( !empty( $this->summary )) {
-			$out .= "Summary:\n{$this->summary}\n";
+			$out .= "\nSummary:\n{$xx}" .
+				wordwrap($this->summary, 80, "\n") . "\n";
 		}
 		if ( !empty( $this->background )) {
-			$out .= "Background:\n" . 
-				wordwrap($this->background, 80, "\n");
+			$out .= "\nBackground:\n{$xx}" . 
+				wordwrap($this->background, 80, "\n") . "\n";
 		}
 		if ( !empty( $this->full )) {
-			$out .= "Proposal:\n" . 
-				wordwrap($this->full, 80, "\n");
+			$out .= "\nProposal:\n{$xx}" . 
+				wordwrap($this->full, 80, "\n") . "\n";
 		}
 		if ( !empty( $this->comments )) {
-			$out .= "Comments:\n" . 
-				wordwrap($this->comments, 80, "\n");
+			$out .= "\nComments:\n{$xx}" . 
+				wordwrap($this->comments, 80, "\n") . "\n";
 		}
 		if ( !empty( $this->processnotes )) {
-			$out .= "Process Comments:\n" .
-				wordwrap($this->processnotes, 80, "\n");
+			$out .= "\nProcess Comments:\n{$xx}" .
+				wordwrap($this->processnotes, 80, "\n") . "\n";
 		}
 
 		return <<<EOTXT
@@ -634,8 +638,6 @@ EOHTML;
 				<h3>Title:</h3>
 				<input type="text" name="title" value="{$title}" size="70" />
 
-				{$diff_comments}
-
 				<h3>Summary:</h3>
 				<textarea name="summary" cols="85" rows="3">{$summary}</textarea>
 
@@ -645,6 +647,8 @@ EOHTML;
 
 				<h3>Proposal:</h3>
 				<textarea name="full" cols="85" rows="30">{$full}</textarea>
+
+				{$diff_comments}
 
 				<h3>Comments:</h3>
 				<textarea name="comments" cols="85" rows="5">{$comments}</textarea>
@@ -867,8 +871,7 @@ EOHTML;
 	 *     existing document. Otherwise, create a new one.
 	 * @return boolean. If true, then the save was successful.
 	 */
-	function save( $update=false )
-	{
+	function save( $update=false ) {
 		global $HDUP;
 		global $G_DEBUG;
 		$success = 0;
@@ -886,6 +889,7 @@ EOHTML;
 		}
 
 		$type = '';
+		$content = NULL;
 		if (( $update ) && ( is_numeric( $this->id ))) {
 			$type = 'updated';
 			$Info = array(
@@ -912,6 +916,15 @@ EOHTML;
 				$Max = my_getInfo( $G_DEBUG, $HDUP, $sql );
 				$this->id = $Max[0]['max'];
 			}
+
+			$sql = <<<EOSQL
+				SELECT agr_version_num from agreements_versions
+					WHERE agr_id={$this->id}
+					ORDER BY agr_version_num desc LIMIT 1;
+EOSQL;
+			$info = $this->mysql->get($sql, 'agr_version_num');
+			$first = array_pop($info);
+			$content = $this->getDiff($first['agr_version_num'], FALSE);
 		}
 		else {
 			$type = 'new';
@@ -938,15 +951,19 @@ EOHTML;
 			return FALSE;
 		}
 
-		$this->sendEmail($type);
+		$this->sendEmail($type, $content);
 		return TRUE;
 	}
 
 	/**
 	 * Send email notice of a new or updated agreement.
 	 * @param[in] type string ('new' or 'updated').
+	 * @param[in] content string. If not null, then contains info to display
+	 *     instead of the message body content.
 	 */
-	function sendEmail($type) {
+	function sendEmail($type, $content) {
+		$content = is_null($content) ? $this->full : $content;
+
 		$msg = <<<EOHTML
 {$type} agreement http://{$_SERVER['SERVER_NAME']}/?id=agreement&num={$this->id}
 
@@ -955,7 +972,7 @@ Summary: {$this->summary}
 
 Agreement:
 ----------------
-{$this->full}
+{$content}
 EOHTML;
 		$msg = format_email($msg);
 
@@ -1073,7 +1090,7 @@ EOHTML;
 	 *     use as a starting point to generate the diff.
 	 * @return string, HTML displaying the diff betweeen the versions.
 	 */
-	function getDiff($version) {
+	function getDiff($version, $use_html=TRUE) {
 		$prev_agreement = TRUE;
 		$older_filename = $this->loadDocByVersion($version, $prev_agreement);
 		$newer_filename = $this->loadDocByVersion($version + 1);
@@ -1084,19 +1101,24 @@ EOHTML;
 
 		$diff = shell_exec("diff --unified={$this->diff_context} -b ".
 			"{$older_filename} {$newer_filename}");
+
 		if (empty($diff)) {
+			$msg = 'There was no difference found between these file versions.';
+
+			if (!$use_html) {
+				return $msg;
+			}
+
 			return <<<EOHTML
 		<div class="no_difference">
 			<img src="display/images/tango/32x32/actions/format-indent-more.png"
 				width="32" height="32"/>
 			<img src="display/images/tango/32x32/actions/format-indent-less.png"
 				width="32" height="32"/>
-			There was no difference between these file versions.
+			{$msg}
 		</div>
 EOHTML;
 		}
-
-		$out = $this->getDiffSummary($version, $prev_agreement);
 
 		$lines = explode("\n", $diff);
 		foreach($lines as $index=>&$l) {
@@ -1111,6 +1133,10 @@ EOHTML;
 			$l = str_replace('\r', "\n", $l);
 			$l = wordwrap($l, 90);
 
+			if (!$use_html) {
+				continue;
+			}
+
 			if (strpos($l, '-') === 0) {
 				$l = "<span class=\"diff_removed\">{$l}</span>";
 			}
@@ -1120,6 +1146,15 @@ EOHTML;
 		}
 		$diff = implode("\n", $lines);
 
+		if (!$use_html) {
+			return <<<EOTXT
+View diff at: http://{$_SERVER['SERVER_NAME']}/?id=previous_version&agr_id={$this->id}&prev_id={$version}
+
+{$diff}
+EOTXT;
+		}
+
+		$out = $this->getDiffSummary($version, $prev_agreement);
 		return <<<EOHTML
 			{$out}
 			<div id="diff">{$diff}</div>
