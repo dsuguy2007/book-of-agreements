@@ -965,7 +965,7 @@ EOSQL;
 		$content = is_null($content) ? $this->full : $content;
 
 		$msg = <<<EOHTML
-{$type} agreement http://{$_SERVER['SERVER_NAME']}/?id=agreement&num={$this->id}
+{$type} agreement http://{$_SERVER['SERVER_NAME']}{$_SERVER['SCRIPT_NAME']}?id=agreement&num={$this->id}
 
 Title: {$this->title}
 Summary: {$this->summary}
@@ -993,7 +993,7 @@ EOHTML;
 
 		echo <<<EOHTML
 			<script type="text/javascript">
-				window.location = "/?id=agreement&num={$this->id}";
+				window.location = "{$_SERVER['SCRIPT_NAME']}?id=agreement&num={$this->id}";
 			</script>
 EOHTML;
 		return TRUE;
@@ -1092,8 +1092,9 @@ EOHTML;
 	 */
 	function getDiff($version, $use_html=TRUE) {
 		$prev_agreement = TRUE;
-		$older_filename = $this->loadDocByVersion($version, $prev_agreement);
-		$newer_filename = $this->loadDocByVersion($version + 1);
+		list($older_filename, $prev_agreement) = 
+			$this->loadDocByVersion($version, $prev_agreement);
+		list($newer_filename) = $this->loadDocByVersion($version + 1);
 
 		if (!file_exists($older_filename) || !file_exists($newer_filename)) {
 			return;
@@ -1121,7 +1122,9 @@ EOHTML;
 		}
 
 		$lines = explode("\n", $diff);
-		foreach($lines as $index=>&$l) {
+		$lines_copy = array();
+		foreach($lines as $index=>$ind) {
+			$l = $ind;
 			if ((strpos($l, '---') === 0) ||
 				(strpos($l, '+++') === 0)) {
 				unset($lines[$index]);
@@ -1143,12 +1146,13 @@ EOHTML;
 			else if (strpos($l, '+') === 0) {
 				$l = "<span class=\"diff_added\">{$l}</span>";
 			}
+			$lines_copy[] = $l;
 		}
-		$diff = implode("\n", $lines);
+		$diff = implode("\n", $lines_copy);
 
 		if (!$use_html) {
 			return <<<EOTXT
-View diff at: http://{$_SERVER['SERVER_NAME']}/?id=previous_version&agr_id={$this->id}&prev_id={$version}
+View diff at: http://{$_SERVER['SERVER_NAME']}{$_SERVER['SCRIPT_NAME']}?id=previous_version&agr_id={$this->id}&prev_id={$version}
 
 {$diff}
 EOTXT;
@@ -1171,7 +1175,7 @@ EOHTML;
 	 * @return string The temp filename where the text-version of this document
 	 *     has been dumped to.
 	 */
-	function loadDocByVersion($version, &$prev_agreement=NULL) {
+	function loadDocByVersion($version, $prev_agreement=NULL) {
 		$sql = <<<EOSQL
 			SELECT * from agreements_versions where agr_id={$this->id}
 				AND agr_version_num={$version}
@@ -1196,8 +1200,27 @@ EOSQL;
 		}
 
 		$file = sprintf($this->filename_format, $this->id, $version);
-		file_put_contents($file, $this->getTextVersion());
-		return $file;
+		$this->writeFile($file, $this->getTextVersion());
+		return array($file, $prev_agreement);
+	}
+
+	/**
+	 * Write out a file to disk.
+	 * Account for the fact that php4 doesn't have file_put_contents, but
+	 * instead requires you to jump through 3 hoops.
+	 *
+	 * @param[in] file string the filename to write the data to.
+	 * @param[in] text string the content to write out to the file.
+	 */
+	function writeFile($file, $text) {
+		if (file_exists('file_put_contents')) {
+			$result = file_put_contents($file, $text);
+			return ($result !== FALSE);
+		}
+
+		$fp = fopen($file, 'w');
+		fwrite($fp, $text);
+		fclose($fp);
 	}
 
 	/**
@@ -1212,14 +1235,14 @@ EOSQL;
 		if ($version > 1) {
 			$prev_ver = $version - 1;
 			$prev = <<<EOHTML
-				<a href="/?id=previous_version&agr_id={$this->id}&prev_id={$prev_ver}">
+				<a href="{$_SERVER['SCRIPT_NAME']}?id=previous_version&agr_id={$this->id}&prev_id={$prev_ver}">
 					&larr; previous version ({$prev_ver})</a>
 EOHTML;
 		}
 
 		return <<<EOHTML
 			<h3>Diff summary for 
-				"<a href="/?id=agreement&amp;num={$this->id}&amp;expand_diffs=1">
+				"<a href="{$_SERVER['SCRIPT_NAME']}?id=agreement&amp;num={$this->id}&amp;expand_diffs=1">
 					{$prev_agreement['title']}</a>":</h3>
 			{$prev}
 			
@@ -1463,7 +1486,7 @@ EOHTML;
 
 		echo <<<EOHTML
 			<script type="text/javascript">
-				window.location = "/?id=minutes&num={$this->m_id}";
+				window.location = "{$_SERVER['SCRIPT_NAME']}?id=minutes&num={$this->m_id}";
 			</script>
 EOHTML;
 
