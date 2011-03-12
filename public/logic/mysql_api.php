@@ -30,15 +30,18 @@ class MysqlApi {
 		$this->password = $password;
 	}
 
+	function setLink($link) {
+		$this->link = $link;
+	}
+
 	/**
 	 * Establish a connection to a mysql database
 	 *
 	 * @return boolean. If TRUE, then the connection either previously existed,
 	 *     or was established properly.
 	 */
-	function connect()
-	{
-		if (!is_null($this->link)) {
+	function connect() {
+		if (!is_null($this->link) && ($this->link !== FALSE)) {
 			return TRUE;
 		}
 
@@ -90,7 +93,7 @@ class MysqlApi {
 		$found = array();
 
 		$result = $this->query($query);
-		if (is_null($result)) {
+		if (is_null($result) || ($result === FALSE)) {
 			return FALSE;
 		}
 
