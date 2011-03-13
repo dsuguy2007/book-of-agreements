@@ -828,7 +828,12 @@ EOHTML;
 					<img src="display/images/tango/32x32/apps/preferences-system-windows.png" width="32" height="32">
 					<a href="#" class="hide">[-] hide {$num_diffs} previous versions</a>
 				</div>
-				<p>The following dates are when they became obsolete.</p>
+
+				<p>This list shows the obsolete versions of this
+				agreement, which we keep for historical purposes.
+				<br>The date on the right is the date the old version was
+				superceded by a new agreement.</p>
+
 				<table cellpadding="3">
 					<tr>
 						<th>version</th>
