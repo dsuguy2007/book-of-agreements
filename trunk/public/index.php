@@ -36,11 +36,6 @@
 				sha1( $_SERVER['PHP_AUTH_PW'] )) {
 			$_SESSION['logged_in'] = 1;
 			$PUBLIC_USER = FALSE;
-
-			if ( !isset( $_GET['print'] )) {
-				global $print_version;
-				$print_version = false;
-			}
 			return TRUE;
 		}
 		else {

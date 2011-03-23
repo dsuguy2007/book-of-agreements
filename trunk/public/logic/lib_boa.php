@@ -305,8 +305,6 @@ class BOADoc {
 	var $mysql;
 	var $cmty;
 
-	var $is_print_version = FALSE;
-
 	function BOADoc() {
 		global $HDUP;
 
@@ -315,9 +313,6 @@ class BOADoc {
 			$HDUP['user'], $HDUP['password']);
 
 		$this->cmty = new Committee();
-
-		global $print_version;
-		$this->is_print_version = $print_version;
 	}
 }
 
@@ -695,28 +690,10 @@ EOHTML;
 				// only show previous version disply with full document display
 				$condition .= $this->displayPreviousVersions();
 
-				$print_ver_label = '';
 				$print_ver_dest = '';
-				$cur_date = '';
-				if (!$this->is_print_version) {
-					$print_ver_label = <<<EOHTML
-						<img class="tango" src="display/images/tango/32x32/devices/printer.png" border="0" alt="print">
-						format for printing
+				$print_ver_label = <<<EOHTML
+					format for printing
 EOHTML;
-					$print_ver_dest = $_SERVER['QUERY_STRING'] . '&amp;print=1';
-				}
-				else {
-					$print_ver_label = <<<EOHTML
-						<img class="tango" src="display/images/tango/32x32/mimetypes/text-html.png" border="0" alt="full page">
-						return to full page
-EOHTML;
-					$print_ver_dest = str_replace( '&print=1', '',
-						$_SERVER['QUERY_STRING'] );
-					$print_ver_dest = str_replace( '&amp;print=1', '',
-						$print_ver_dest);
-
-					$cur_date = '<p>As of: ' . date('r') . '</p>';
-				}
 
 				$date = $this->Date->toString( );
 
@@ -739,11 +716,15 @@ EOHTML;
 					$content .= "<h3>Process Comments:</h3>\n$processnotes\n";
 				}
 
+				$current_date = date('r');
 				echo <<<EOHTML
-					<div class="print_version_link">
-						<a href="/?{$print_ver_dest}">{$print_ver_label}</a>
-					</div>
 					<div class="agreement">
+						<div id="print_version_link">
+							<a href="#" onclick="window.print();">
+								<img class="tango" border="0" alt="print"
+									src="display/images/tango/32x32/devices/printer.png">print</a>
+						</div>
+
 						<h1 class="agrm">{$title}</h1>
 						{$condition}
 						{$admin_info}
@@ -752,7 +733,7 @@ EOHTML;
 							{$content}
 						</div>
 					</div>
-					{$cur_date}
+					<p class="print_date">As of: {$current_date}</p>
 EOHTML;
 
 				break;
@@ -784,10 +765,6 @@ EOSQL;
 	 *     return NULL.
 	 */
 	function displayPreviousVersions() {
-		if ($this->is_print_version) {
-			return NULL;
-		}
-
 		$this->loadPreviousVersions();
 		if (empty($this->previous_versions)) {
 			return NULL;

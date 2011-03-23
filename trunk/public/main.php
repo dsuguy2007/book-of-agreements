@@ -65,8 +65,6 @@
 		$num = intval( $_GET['num'] );
 	}
 
-	$print_version = ( isset( $_GET['print']) || $PUBLIC_USER ) ? true : false;
-
 	#-- get links array info
 	require_once( "logic/links/main_lk.php" );
 

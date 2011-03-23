@@ -253,15 +253,17 @@ div.minutes {
 	margin: -10px 5px 5px 5px;
 }
 
-.print_version_link {
+#print_version_link {
 	position: relative;
 	float: right;
-	margin: 3px 5px 5px 5px;
+	margin: 3px 15px 5px 5px;
 }
-
-.print_version_link a {
+#print_version_link a {
 	color: #000000;
 	text-decoration: none;
+}
+#print_version_link a img {
+	margin-right: 4px;
 }
 
 .info {
@@ -361,4 +363,8 @@ div.minutes {
 .diff_removed {
 	color: #666;
 	background: #ddd;
+}
+
+.print_date {
+	display: none;
 }
