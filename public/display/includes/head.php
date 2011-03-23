@@ -5,12 +5,9 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 	<title><?= $title; ?></title>
 	<link rel="stylesheet" href="display/styles/default.css" type="text/css" />
+	<link rel="stylesheet" href="display/styles/print.css" type="text/css" media="print" />
+
 <?php
-	global $print_version;
-	if ( $print_version ) {
-		echo "\t" . '<link rel="stylesheet" href="display/styles/print.css" type="text/css" />' . "\n";
-	}
-	
 	if ($use_jquery) {
 		echo <<<EOHTML
 		<script type="text/javascript" src="http://code.jquery.com/jquery-1.5.1.min.js"></script>
