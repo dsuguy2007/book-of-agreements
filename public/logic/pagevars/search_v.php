@@ -99,7 +99,7 @@
 		}
 
 		$sql_a = <<<EOSQL
-			select id, {$ft_match_agr} {$ft_against} as score from
+			SELECT id, {$ft_match_agr} {$ft_against} as score from
 				agreements where {$ft_match_agr} {$ft_against}
 				{$agr_sql_clauses} order by score desc
 EOSQL;

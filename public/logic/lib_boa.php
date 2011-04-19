@@ -1,5 +1,7 @@
 <?php
 
+define('NUM_SECS_PER_DAY', 86400);
+
 # ----------------------------------------------------
 # Globally defined functions - useful across the site
 # ----------------------------------------------------
@@ -170,11 +172,19 @@ class MyDate
 
 	function setDate( $date_string )
 	{
-		if ( preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', $date_string, $Matches )) {
+		if ( preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/',
+			$date_string, $Matches )) {
+
 			$this->year = $Matches[1];
 			$this->month = $Matches[2];
 			$this->day = $Matches[3];
 		}
+	}
+
+	function getBefore($num_days) {
+		$current_ts = mktime(0, 0, 0, $this->month, $this->day, $this->year);
+		$start_ts = $current_ts - (NUM_SECS_PER_DAY * $num_days);
+		return date('Y-m-d', $start_ts);
 	}
 
 	function toString( )
@@ -559,9 +569,8 @@ Date: {$date}
 EOTXT;
 	}
 
-
 	/**
-	 * Display the document in the format specified.
+	 * Display the agreement in the format specified.
 	 *
 	 * @param[in] type string (default: document) specifies the output
 	 * format. Possible options would be:
@@ -716,6 +725,8 @@ EOHTML;
 					$content .= "<h3>Process Comments:</h3>\n$processnotes\n";
 				}
 
+				$related_minutes = $this->getRelatedMinutes();
+
 				$current_date = date('r');
 				echo <<<EOHTML
 					<div class="agreement">
@@ -729,6 +740,7 @@ EOHTML;
 						{$condition}
 						{$admin_info}
 						<div class="info">
+							{$related_minutes}
 							<h3>{$cmty_name}&nbsp;{$date}</h3>
 							{$content}
 						</div>
@@ -740,6 +752,49 @@ EOHTML;
 		}
 
 		return 1;
+	}
+
+
+	/**
+	 * Render to HTML a brief listing of recently occured minutes.
+	 */
+	function getRelatedMinutes() {
+		// punt if not logged in...
+		if (!array_key_exists('logged_in', $_SESSION) ||
+			!$_SESSION['logged_in']) {
+			return '';
+		}
+
+		$cur_date = $this->Date->toString();
+		$start_date = $this->Date->getBefore(50);
+		$sql = <<<EOSQL
+SELECT m_id, date, notes
+	FROM minutes
+	WHERE date<='{$cur_date}' AND date>'{$start_date}' AND cid=14
+	ORDER BY date asc;
+EOSQL;
+
+		$data = $this->mysql->get($sql);
+		$out = '';
+		foreach($data as $m) {
+			$out .= <<<EOHTML
+				<li>
+					<a href="/?id=minutes&num={$m['m_id']}">{$m['date']}</a>
+					{$m['notes']}
+				</li>
+EOHTML;
+		}
+
+		if ($out == '') {
+			return '';
+		}
+
+		return <<<EOHTML
+			<div class="related_minutes">
+				<span class="header">Related Minutes:</span>
+				<ul>{$out}</ul>
+			</div>
+EOHTML;
 	}
 
 	/**
