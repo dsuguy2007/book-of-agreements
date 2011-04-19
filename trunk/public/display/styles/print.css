@@ -1,5 +1,5 @@
 #nav, #search, #login, #logout, #versions_reveal, 
-	#print_version_link, .return_link {
+	#print_version_link, .return_link, .related_minutes {
 	display: none;
 }
 

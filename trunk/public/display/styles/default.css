@@ -65,10 +65,27 @@ img.titlephoto {
 	margin-right: 15px;
 }
 
-.actions {
+.actions, .related_minutes {
     width: 25%;
 	float: right;
 	margin-top: 15px;
+}
+
+.related_minutes {
+	background: #eee;
+	border: 1px solid #ddd;
+	padding: 10px;
+	margin: 5px;
+}
+
+.related_minutes .header {
+	font-size: 10pt;
+	font-weight: bold;
+}
+
+.related_minutes ul {
+	padding-left: 20px;
+	margin: 2px;
 }
 
 #banner {
