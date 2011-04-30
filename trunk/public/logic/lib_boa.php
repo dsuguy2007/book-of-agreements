@@ -1,6 +1,7 @@
 <?php
 
 define('NUM_SECS_PER_DAY', 86400);
+define('ADJACENT_MINUTES_DAYS', 50);
 
 # ----------------------------------------------------
 # Globally defined functions - useful across the site
@@ -766,7 +767,7 @@ EOHTML;
 		}
 
 		$cur_date = $this->Date->toString();
-		$start_date = $this->Date->getBefore(50);
+		$start_date = $this->Date->getBefore(ADJACENT_MINUTES_DAYS);
 		$sql = <<<EOSQL
 SELECT m_id, date, notes
 	FROM minutes
@@ -779,7 +780,7 @@ EOSQL;
 		foreach($data as $m) {
 			$out .= <<<EOHTML
 				<li>
-					<a href="/?id=minutes&num={$m['m_id']}">{$m['date']}</a>
+					<a href="?id=minutes&num={$m['m_id']}">{$m['date']}</a>
 					{$m['notes']}
 				</li>
 EOHTML;
@@ -789,9 +790,10 @@ EOHTML;
 			return '';
 		}
 
+		$num_days = ADJACENT_MINUTES_DAYS;
 		return <<<EOHTML
 			<div class="related_minutes">
-				<span class="header">Related Minutes:</span>
+				<span class="header">Minutes from previous {$num_days} days:</span>
 				<ul>{$out}</ul>
 			</div>
 EOHTML;
