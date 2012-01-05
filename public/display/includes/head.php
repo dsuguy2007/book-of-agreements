@@ -8,6 +8,12 @@
 	<link rel="stylesheet" href="display/styles/print.css" type="text/css" media="print" />
 
 <?php
+	foreach($stylesheets as $s) {
+		echo <<<EOHTML
+	<link rel="stylesheet" href="display/styles/{$s}" type="text/css" />
+EOHTML;
+	}
+
 	if ($use_jquery) {
 		echo <<<EOHTML
 		<script type="text/javascript" src="http://code.jquery.com/jquery-1.5.1.min.js"></script>

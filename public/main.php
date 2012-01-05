@@ -25,10 +25,11 @@
 
 	$template = 'default_t.php';
 	$js = '';
+	$stylesheets = array();
 
-	$MainNav = array( );
-	$Cmtys = array( );
-	$SubCmtys = array( );
+	$MainNav = array();
+	$Cmtys = array();
+	$SubCmtys = array();
 	$id = '';
 	$cmty = '';
 	$sub = '';
