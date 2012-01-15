@@ -148,7 +148,7 @@ EOSQL;
 	# relevant docs bubble up...
 
 	if ( !empty( $Ignored )) {
-		$dropped = '<br />Some common words were ignored: [' .
+		$dropped = '<br>Some common words were ignored: [' .
 			implode( ', ', $Ignored ) . ']';
 	}
 	$num_matches = count( $Found );

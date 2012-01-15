@@ -42,7 +42,7 @@ EOHTML;
 <div class="agreement">
 <h1 class="{$h1_class}">
 	<img class="tango" src="display/images/tango/32x32/{$access_img}"
-		alt="agreements access icon" />
+		alt="agreements access icon">
 	All {$pub}Agreements
 </h1>
 
