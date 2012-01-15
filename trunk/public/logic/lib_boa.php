@@ -1072,11 +1072,15 @@ EOSQL;
 	function sendEmail($type, $content) {
 		$content = is_null($content) ? $this->full : $content;
 
+		$diff = ($this->diff_comments == '') ? '' :
+			'Diff comments: ' .  $this->diff_comments;
+
 		$msg = <<<EOHTML
 {$type} agreement http://{$_SERVER['SERVER_NAME']}{$_SERVER['SCRIPT_NAME']}?id=agreement&num={$this->id}
 
 Title: {$this->title}
 Summary: {$this->summary}
+{$diff}
 
 Agreement:
 ----------------
