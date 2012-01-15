@@ -47,7 +47,7 @@
 			'<input type="hidden" name="num" value="'.$num.'">' . "\n".
 			$update_string . 
 			$Mins->Date->selectDate( ) .
-			$Cmty->selectCommittee( $Mins->cid );
+			$Cmty->getSelectCommittee( $Mins->cid );
 		$Mins->display( 'form' );
 		echo '<p><input type="submit" name="save" ' .
 			'value="save changes &rarr;">' . "</p></form>\n";

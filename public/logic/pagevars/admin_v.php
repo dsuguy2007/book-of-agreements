@@ -3,6 +3,7 @@
 	$num = 0;
 	$update = false;
 	$confirm_del = false;
+	$stylesheets[] = 'admin.css';
 
 	# fetch document id, if it exists...
 	if ( isset( $_POST['num'] )) {

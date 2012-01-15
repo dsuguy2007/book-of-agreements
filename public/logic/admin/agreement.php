@@ -38,39 +38,15 @@
 		);
 		$update = true;
 	}
-	$Cmty = new Committee( $Agrms->cid );
 
 	if ( isset( $_POST['save'] )) {
-		$Agrms->save( $update );
+		$Agrms->save($update);
 	}
 	elseif( isset( $_GET['delete'] )) {
 		$Agrms->delete();
 	}
 	else {
-		$num = $Agrms->getId();
-		if ( $num > 0 ) {
-			$update_string = 
-				'<input type="hidden" name="update" value="1">' . "\n";
-		}
-
-		echo <<<EOHTML
-			<h1>admin agreement entry tool</h1>
-			<form action="?id=admin" method="post">
-			<input type="hidden" name="doctype" value="agreement">
-			<input type="hidden" name="admin_post" value="1">
-			<input type="hidden" name="num" value="{$num}">
-			{$update_string}
-EOHTML;
-
-		echo $Agrms->Date->selectDate( ) .
-			$Cmty->selectCommittee( $Agrms->cid );
-		$Agrms->actionChoices( );
-		$Agrms->display( 'form' );
-
-		echo <<<EOHTML
-			<p><input type="submit" name="save" value="save changes &rarr;"></p>
-			</form>
-EOHTML;
+		$Agrms->display('form');
 	}
 
 ?>
