@@ -317,10 +317,10 @@ EOHTML;
  * Parent class to both Agreements and Minutes
  */
 class BOADoc {
-	public $mysql;
-	public $cmty;
-
-	protected $id;
+	// need to support php 4.x
+	var $mysql;
+	var $cmty;
+	var $id;
 
 	function BOADoc() {
 		global $HDUP;
@@ -667,6 +667,10 @@ EOHTML;
 				$update_string = ( $num <= 0 ) ? '' :
 					'<input type="hidden" name="update" value="1">';
 
+				$controls = $this->Date->selectDate() .
+					$this->cmty->getSelectCommittee() .
+					$this->actionChoices();
+
 				$action = ($num == '') ? 'Add' : 'Edit';
 				echo <<<EOHTML
 				<h1>{$action} Agreement</h1>
@@ -676,9 +680,7 @@ EOHTML;
 				<input type="hidden" name="num" value="{$num}">
 				{$update_string}
 
-				{$this->Date->selectDate()}
-				{$this->cmty->getSelectCommittee()}
-				{$this->actionChoices()}
+				{$controls}
 
 				<label>
 					Make this agreement public to the world:
