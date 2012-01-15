@@ -233,7 +233,6 @@ EOHTML;
 }
 
 class Committee {
-	var $cnum;
 	var $cid;
 
 	# Committee
@@ -248,14 +247,13 @@ class Committee {
 	}
 
 	# Committee
-	function selectCommittee( $cid='' )
-	{
+	function getSelectCommittee() {
 		global $Cmtys;
 		global $SubCmtys;
 
-		$out = "<p>Committee:\n".'<select name="cid" size="1">';
+		$out = '';
 		foreach( $Cmtys as $cmty_num=>$c ) {
-			if ( $this->cnum == $cmty_num ) {
+			if ( $this->cid == $cmty_num ) {
 				$out .= '<option value="'.$cmty_num.'" selected="selected">'.
 					"$c</option>\n";
 			}
@@ -265,7 +263,7 @@ class Committee {
 
 			if ( isset( $SubCmtys[$cmty_num] )) {
 				foreach( $SubCmtys[$cmty_num] as $scmty_num=>$sc ) {
-					if ( $this->cnum == $scmty_num ) {
+					if ( $this->cid == $scmty_num ) {
 						$out .= '<option value="' . $scmty_num . 
 							'" selected="selected">' . "$c:$sc</option>\n";
 					}
@@ -277,9 +275,15 @@ class Committee {
 			}
 
 		}
-		$out .= '</select></p>';
 
-		return $out;
+		return <<<EOHTML
+		<label>
+			<span>Committee:</span>
+			<select name="cid" size="1">
+				{$out}
+			</select>
+		</label>
+EOHTML;
 	}
 
 	# Committee
@@ -313,8 +317,10 @@ EOHTML;
  * Parent class to both Agreements and Minutes
  */
 class BOADoc {
-	var $mysql;
-	var $cmty;
+	public $mysql;
+	public $cmty;
+
+	protected $id;
 
 	function BOADoc() {
 		global $HDUP;
@@ -324,6 +330,15 @@ class BOADoc {
 			$HDUP['user'], $HDUP['password']);
 
 		$this->cmty = new Committee();
+	}
+
+	function setId($id) {
+		$this->id = $id;
+		$this->cmty->setId($id);
+	}
+
+	function getId() {
+		return $this->id;
 	}
 }
 
@@ -383,10 +398,6 @@ class Agreement extends BOADoc
 		}
 	}
 
-	function setId($id) {
-		$this->id = $id;
-	}
-
 	function setContent($t='', $s='', $f='', $b='', $c='', 
 			$p='', $c_id='', $D='', $sb=0, $x='', $wp=false ) {
 		$this->title = $t;
@@ -418,10 +429,6 @@ class Agreement extends BOADoc
 		if ($c_id != '') {
 			$this->cmty->setId($c_id);
 		}
-	}
-
-	function getId() {
-		return $this->id;
 	}
 
 	# agreement
@@ -493,20 +500,32 @@ MODE) ) HAVING relevance > 0 ORDER BY relevance DESC;
 
 	/**
 	 * Validate the content for this agreement.
+	 *
+	 * @return array, Empty if valid. Populated with the keys of the required
+	 * elements which aren't valid.
 	 */
-	function isValid( )
+	function validateInput()
 	{
+		$errs = array();
+
+		// if editing and no comments
 		if (($this->id != 0) && empty($this->diff_comments)) {
-			return FALSE;
+			$errs[] = 'diff_comments';
 		}
 
-		# don't look for an id, allowing for "add"
-		return (!empty($this->title) && !empty($this->full));
+		if (empty($this->title)) {
+			$errs[] = 'title';
+		}
+		if (empty($this->full)) {
+			$errs[] = 'full';
+		}
+		return $errs;
 	}
 
 	function actionChoices( )
 	{
-		if ( !$this->isValid( )) {
+		$errs = $this->validateInput();
+		if (!empty($errs)) {
 			return NULL;
 		}
 
@@ -579,8 +598,7 @@ EOTXT;
 	 *     - search, display search results
 	 *     - document, display full document for html presentation
 	 */
-	function display( $type='document' )
-	{
+	function display($type='document', $errors=array()) {
 		global $sub_summary_length;
 		$admin_info = $this->adminActions( );
 		$short = '';
@@ -598,7 +616,8 @@ EOTXT;
 		$condition = '';
 		if ( $surpassed_by != 0 ) {
 			$Replacement = new Agreement( $surpassed_by );
-			if ( $Replacement->isValid( )) {
+			$validation_errs = $Replacement->validateInput();
+			if (empty($validation_errs)) {
 				$rep_title = format_html( $Replacement->title );
 				$date_string = $Replacement->Date->toString();
 				$condition = <<<EOHTML
@@ -626,41 +645,87 @@ EOHTML;
 				$comments = format_html( $this->comments, true );
 				$processnotes = format_html( $this->processnotes, true );
 
+				$exp = ($this->expired) ? ' checked' : '';
+
 				$diff_comments = '';
 				if ($this->id != 0) {
+					$css = !in_array('diff_comments', $errors) ? '' :
+						' class="err"';
+
 					$diff_comments = <<<EOHTML
-						<h3>Diff comments:</h3>
+					<label{$css}>
+						<span>Diff comments: *</span>
 						<input type="text" name="diff_comments" value="" size="70">
+					</label>
 EOHTML;
 				}
 
+				$css_title = !in_array('title', $errors) ? '' : ' class="err"';
+				$css_full = !in_array('full', $errors) ? '' : ' class="err"';
+
+				$num = $this->getId();
+				$update_string = ( $num <= 0 ) ? '' :
+					'<input type="hidden" name="update" value="1">';
+
+				$action = ($num == '') ? 'Add' : 'Edit';
 				echo <<<EOHTML
-				<p>
+				<h1>{$action} Agreement</h1>
+				<form action="?id=admin" method="post">
+				<input type="hidden" name="doctype" value="agreement">
+				<input type="hidden" name="admin_post" value="1">
+				<input type="hidden" name="num" value="{$num}">
+				{$update_string}
+
+				{$this->Date->selectDate()}
+				{$this->cmty->getSelectCommittee()}
+				{$this->actionChoices()}
+
+				<label>
 					Make this agreement public to the world:
 					<input type="checkbox" name="world_public" {$pub}>
-				</p>
+				</label>
 
-				<h3>Title:</h3>
-				<input type="text" name="title" value="{$title}" size="70">
+				<label>
+					Mark this agreement as expired:
+					<input type="checkbox" name="expired"{$exp}>
+				</label>
 
-				<h3>Summary:</h3>
-				<textarea name="summary" cols="85" rows="3">{$summary}</textarea>
+				<label{$css_title}>
+					<span>Title: *</span>
+					<input type="text" name="title" value="{$title}" size="70">
+				</label>
 
-				<h3>Background:</h3>
-				<textarea name="background" cols="85" 
-					rows="7">{$background}</textarea>
+				<label>
+					<span>Summary:</span>
+					<textarea name="summary" cols="85" rows="3">{$summary}</textarea>
+				</label>
 
-				<h3>Proposal:</h3>
-				<textarea name="full" cols="85" rows="30">{$full}</textarea>
+				<label>
+					<span>Background:</span>
+					<textarea name="background" cols="85" 
+						rows="7">{$background}</textarea>
+				</label>
+
+				<label{$css_full}>
+					<span>Proposal: *</span>
+					<textarea name="full" cols="85" rows="30">{$full}</textarea>
+				</label>
 
 				{$diff_comments}
 
-				<h3>Comments:</h3>
-				<textarea name="comments" cols="85" rows="5">{$comments}</textarea>
+				<label>
+					<span>Comments:</span>
+					<textarea name="comments" cols="85" rows="5">{$comments}</textarea>
+				</label>
 
-				<h3>Process Notes:</h3>
-				<textarea name="processnotes" cols="85" 
-					rows="3">{$processnotes}</textarea>
+				<label>
+					<span>Process Notes:</span>
+					<textarea name="processnotes" cols="85" 
+						rows="3">{$processnotes}</textarea>
+				</label>
+
+				<p><input type="submit" name="save" value="save changes &rarr;"></p>
+				</form>
 EOHTML;
 
 				break;
@@ -910,7 +975,7 @@ EOHTML;
 	 *     existing document. Otherwise, create a new one.
 	 * @return boolean. If true, then the save was successful.
 	 */
-	function save( $update=false ) {
+	function save($update=false) {
 		global $HDUP;
 		global $G_DEBUG;
 		$success = 0;
@@ -919,11 +984,13 @@ EOHTML;
 		}
 
 		# check for required items
-		if ( !$this->isValid( )) {
+		$errs = $this->validateInput();
+		if (!empty($errs)) {
 			echo <<<EOHTML
-				<div class="error">Missing content!
-					<a href="javascript: history.go(-1);">Back</a></div>
+				<div class="error">Missing content!</div>
 EOHTML;
+			$this->display('form', $errs);
+
 			return FALSE;
 		}
 
@@ -949,13 +1016,6 @@ EOHTML;
 			$success = my_update( $G_DEBUG, $HDUP, 'agreements', 
 				$Info, $condition );
 
-			# grab the newly inserted document's ID number
-			if ( !is_int( $this->id )) {
-				$sql = 'select max( id ) as max from agreements';
-				$Max = my_getInfo( $G_DEBUG, $HDUP, $sql );
-				$this->id = $Max[0]['max'];
-			}
-
 			$sql = <<<EOSQL
 				SELECT agr_version_num from agreements_versions
 					WHERE agr_id={$this->id}
@@ -969,7 +1029,7 @@ EOSQL;
 			$type = 'new';
 			// this is a new document
 			$Info = array(
-				$this->id,
+				NULL,
 				clean_html( $this->title ),
 				clean_html( $this->summary ),
 				clean_html( $this->full ),
@@ -983,6 +1043,13 @@ EOSQL;
 				(( $this->world_public ) ? 1 : 0 )
 			);
 			$success = my_insert( $G_DEBUG, $HDUP, 'agreements', $Info );
+
+			# grab the newly inserted document's ID number
+			if ( !is_int( $this->id )) {
+				$sql = 'select max( id ) as max from agreements';
+				$Max = my_getInfo( $G_DEBUG, $HDUP, $sql );
+				$this->id = $Max[0]['max'];
+			}
 		}
 
         if ( !$success ) {
@@ -1297,7 +1364,7 @@ EOHTML;
  */
 class Minutes extends BOADoc {
 	var $doc_type = 'minutes';
-	var $m_id = 0;
+	var $id = 0;
 	var $notes = null;
 	var $agenda = null;
 	var $content = null;
@@ -1312,21 +1379,22 @@ class Minutes extends BOADoc {
 	{
 		parent::BOADoc();
 
+		$this->id = $m;
 		$this->notes = clean_html($n);
 		$this->agenda = clean_html($a);
 		$this->content = clean_html($c);
+
 		$this->cid = $c_id;
+		$this->cmty->setId($c_id);
 
 		if ( empty( $D )) { $this->Date = new MyDate( ); }
 		else { $this->Date = $D; }
 
-		$this->m_id = $m;
-
 		# if potentially valid id num
-		if ( intval( $this->m_id ) > 0 ) {
+		if ( intval( $this->id ) > 0 ) {
 			# check to see if the required entries are valid
 			if ( empty( $this->agenda ) && empty( $this->content ))
-			{ $this->loadById( $this->m_id ); }
+			{ $this->loadById( $this->id ); }
 		}
 	}
 
@@ -1338,7 +1406,7 @@ class Minutes extends BOADoc {
 		$entryDate = new MyDate( );
 
 		$min_id = $id;
-		if ( $id == '' ) { $min_id = $this->m_id; }
+		if ( $id == '' ) { $min_id = $this->id; }
 
 		$sql = 'select committees.cmty, minutes.* from minutes, '.
 			"committees where m_id=$min_id  and committees.cid=minutes.cid";
@@ -1390,7 +1458,7 @@ class Minutes extends BOADoc {
 			case 'compact':
 				echo "<tr>\n" .
 					"\t<td>" . $this->cmty->getName() . "</td>\n" .
-					"\t<td>" . '<a href="?id=minutes&num=' . $this->m_id . '">' .
+					"\t<td>" . '<a href="?id=minutes&num=' . $this->id . '">' .
 						$this->Date->toString( ) . "</a></td>\n" . 
 					"\t<td>" . $notes . "</td>\n";
 					"</tr>\n";
@@ -1414,7 +1482,7 @@ class Minutes extends BOADoc {
 				echo <<<EOHTML
 					<div class="minutes">
 						<h2 class="mins">
-							<a href="?id=minutes&num={$this->m_id}">{$date_string} 
+							<a href="?id=minutes&num={$this->id}">{$date_string} 
 								{$cmty_name}</a> minutes
 						</h2>
 						<div class="item_topic">
@@ -1453,12 +1521,12 @@ EOHTML;
 		{
 			$link = <<<EOHTML
 				<div class="actions">
-					<a href="?id=admin&amp;doctype=minutes&amp;num={$this->m_id}">
+					<a href="?id=admin&amp;doctype=minutes&amp;num={$this->id}">
 						<img class="tango" src="display/images/tango/32x32/apps/accessories-text-editor.png" alt="edit">
 						edit
 					</a>
 					&nbsp;&nbsp;
-					<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->m_id}">
+					<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->id}">
 						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" alt="delete">
 						delete
 						</a>
@@ -1474,8 +1542,8 @@ EOHTML;
 		global $HDUP;
 		global $G_DEBUG;
 		$success = 0;
-		if ( $this->m_id == 0 ) {
-			$this->m_id = '';
+		if ( $this->id == 0 ) {
+			$this->id = '';
 		}
 
 		# check for required items
@@ -1488,7 +1556,7 @@ EOHTML;
 		}
 
 		# if an update then keep the id
-		if (( $update ) && ( is_int( $this->m_id ))) {
+		if (( $update ) && ( is_int( $this->id ))) {
 			$Info = array( 'notes="' . $this->notes . '"',
 				'agenda="' . $this->agenda . '"',
 				'content="' . $this->content . '"',
@@ -1496,13 +1564,13 @@ EOHTML;
 				'date="' . $this->Date->toString( ) . '"'
 			);
 
-			$condition = "where m_id=$this->m_id";
+			$condition = "where m_id=$this->id";
 			$success = my_update( $G_DEBUG, $HDUP, 'minutes', 
 				$Info, $condition );
 		}
 		# otherwise, treat this as a new entry
 		else {
-			$Info = array( $this->m_id,
+			$Info = array( $this->id,
 				$this->notes,
 				$this->agenda,
 				$this->content,
@@ -1517,15 +1585,15 @@ EOHTML;
 			return FALSE;
 		}
 
-		if ( !is_int( $this->m_id )) {
+		if ( !is_int( $this->id )) {
 			$sql = 'select max( m_id ) as max from minutes';
 			$Max = my_getInfo( $G_DEBUG, $HDUP, $sql );
-			$this->m_id = $Max[0]['max'];
+			$this->id = $Max[0]['max'];
 		}
 
 		echo <<<EOHTML
 			<script type="text/javascript">
-				window.location = "{$_SERVER['SCRIPT_NAME']}?id=minutes&num={$this->m_id}";
+				window.location = "{$_SERVER['SCRIPT_NAME']}?id=minutes&num={$this->id}";
 			</script>
 EOHTML;
 
@@ -1548,7 +1616,7 @@ EOHTML;
 				<h1 class="mins">{$cmty_name}: {$date_string}</h1>
 			</div>
 			<div class="actions">
-				<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->m_id}&confirm_del=1">
+				<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->id}&confirm_del=1">
 					<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" alt="delete">
 						confirm delete</a>
 			</div>
@@ -1557,7 +1625,7 @@ EOHTML;
 		else
 		{
 			$HDUP['table'] = 'minutes';
-			$success = my_delete( $G_DEBUG, $HDUP, 'm_id', $this->m_id );
+			$success = my_delete( $G_DEBUG, $HDUP, 'm_id', $this->id );
 			if ( $success ) { echo "<p>Item deleted\n"; }
 			else
 			{ echo '<div class="error">Error: Item was not deleted</div>' . "\n"; }

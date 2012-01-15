@@ -35,18 +35,23 @@ img.titlephoto {
 }
 
 .error, p .error {
-	background: #990000;
-	background-image: url('/display/images/tango/32x32/status/dialog-error.png');
-	background-repeat: no-repeat;
-	background-position: 5px 5px;
-	color: #ffff66;
-	padding: 12px 10px 12px 40px;
+	background: #fa9 url('/display/images/tango/32x32/status/dialog-error.png') no-repeat 9px 5px;
+	color: #900;
+	padding: 5px 48px;
 	font-size: 24px;
-	margin: 20px;
+	margin: 20px 0;
+	line-height: 30px;
+	-webkit-border-radius: 8px;
+	   -moz-border-radius: 8px;
+	        border-radius: 8px;
 }
 
 .error a:link {
 	color: #cccc66;
+}
+
+#content .error h2 {
+	font-size: 30px;
 }
 
 .actions, .admin_actions {
@@ -57,6 +62,9 @@ img.titlephoto {
 	color: #000000;
 	font-weight: bold;
 	white-space: nowrap;
+	-webkit-border-radius: 8px;
+	   -moz-border-radius: 8px;
+	        border-radius: 8px;
 } 
 
 .admin_actions {
@@ -67,6 +75,7 @@ img.titlephoto {
 
 .admin_actions a {
 	margin-right: 15px;
+	text-decoration: none;
 }
 
 .actions, .related_minutes {
@@ -104,12 +113,16 @@ img.titlephoto {
 	margin-left: 5px;
 	font-size: 11pt;
 	width: 160px;
-	-moz-border-radius: 1em;		
+	-webkit-border-radius: 8px;
+	   -moz-border-radius: 8px;
+	        border-radius: 8px;
 	line-height: 9pt;
 }
 
 #nav p {
-	-moz-border-radius: 1em;		
+	-webkit-border-radius: 8px;
+	   -moz-border-radius: 8px;
+	        border-radius: 8px;
 }   
 
 #nav p.menu {
@@ -118,7 +131,6 @@ img.titlephoto {
 
 #nav br {
 	display: none;
-	-moz-border-radius: 1em;		
 }
 
 #nav a:link, #nav a:visited, span.link {
@@ -128,7 +140,9 @@ img.titlephoto {
 	padding-left: 2.5em;
 	text-indent: -2em;
 	border: 1px solid #ffffff;
-	-moz-border-radius: 1em;		
+	-webkit-border-radius: 8px;
+	   -moz-border-radius: 8px;
+	        border-radius: 8px;
 }
 
 #nav span.linkcount {
@@ -323,9 +337,11 @@ div.minutes {
 	top: 25px;
 	right: 28px;
 	background-color: #FB9A54;
-	padding: 8px;
-	padding-right: 10px;
+	padding: 4px 8px;
 	border: 1px solid #cc7d44;
+	-webkit-border-radius: 10px;
+	   -moz-border-radius: 10px;
+	        border-radius: 10px;
 }
 
 #login a, #logout a {
@@ -345,7 +361,7 @@ div.minutes {
 }
 
 .tango {
-	vertical-align: -4px;
+	vertical-align: -7px;
 }
 
 #search_query, #advanced_options {

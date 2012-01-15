@@ -5,7 +5,7 @@
 	else {
 		$num = intval( $_GET['num'] );
 		$Date = new MyDate( ); 
-		$Mins = new Minutes( $num );
+		$Mins = new Minutes($num);
 		$Cmty = new Committee($Mins->cid);
 		$title .= ': ' . $Cmty->getName() . ' ' . 
 			$Mins->Date->toString( ) . ' [Minutes]';
