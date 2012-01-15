@@ -518,11 +518,11 @@ MODE) ) HAVING relevance > 0 ORDER BY relevance DESC;
 		echo <<<EOHTML
 			<p>
 				This agreement has expired: 
-				<input type="checkbox" name="expired" {$exp} />
+				<input type="checkbox" name="expired" {$exp}>
 			</p>
 			<p>
 				This agreement has been surpassed by: 
-				<input type="text" name="surpassed_by" maxlength="4" {$spass} size="4" />
+				<input type="text" name="surpassed_by" maxlength="4" {$spass} size="4">
 				(agreement ID number)
 			</p>
 EOHTML;
@@ -637,11 +637,11 @@ EOHTML;
 				echo <<<EOHTML
 				<p>
 					Make this agreement public to the world:
-					<input type="checkbox" name="world_public" {$pub} />
+					<input type="checkbox" name="world_public" {$pub}>
 				</p>
 
 				<h3>Title:</h3>
-				<input type="text" name="title" value="{$title}" size="70" />
+				<input type="text" name="title" value="{$title}" size="70">
 
 				<h3>Summary:</h3>
 				<textarea name="summary" cols="85" rows="3">{$summary}</textarea>
@@ -733,7 +733,7 @@ EOHTML;
 					<div class="agreement">
 						<div id="print_version_link">
 							<a href="#" onclick="window.print();">
-								<img class="tango" border="0" alt="print"
+								<img class="tango" alt="print"
 									src="display/images/tango/32x32/devices/printer.png">print</a>
 						</div>
 
@@ -890,12 +890,12 @@ EOHTML;
 			$link = <<<EOHTML
 				<div class="actions">
 					<a href="?id=admin&amp;doctype=agreement&amp;num={$this->id}">
-						<img class="tango" src="display/images/tango/32x32/apps/accessories-text-editor.png" border="0" alt="edit" />
+						<img class="tango" src="display/images/tango/32x32/apps/accessories-text-editor.png" alt="edit">
 						edit
 					</a>
 					&nbsp;&nbsp;
 					<a href="?id=admin&amp;doctype=agreement&amp;delete={$this->id}">
-						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete" />
+						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" alt="delete">
 						delete
 					</a>
 				</div>
@@ -1088,12 +1088,12 @@ EOSQL;
 				</div>
 
 				<form action="?" method="get">
-				<input type="hidden" name="id" value="admin" />
-				<input type="hidden" name="doctype" value="agreement" />
-				<input type="hidden" name="delete" value="{$this->id}" />
+				<input type="hidden" name="id" value="admin">
+				<input type="hidden" name="doctype" value="agreement">
+				<input type="hidden" name="delete" value="{$this->id}">
 				<div align="right">
 					<a href="?id=admin&amp;doctype=agreement&amp;delete={$this->id}&amp;confirm_del=1">
-						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete" />
+						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" alt="delete">
 						confirm delete</a>
 				</div>
 				</form>
@@ -1286,7 +1286,7 @@ EOHTML;
 			{$prev}
 			
 			<p>Updated: {$prev_agreement['updated_date']}
-			<br />Comment: {$prev_agreement['diff_comment']}
+			<br>Comment: {$prev_agreement['diff_comment']}
 			</p>
 EOHTML;
 	}
@@ -1372,7 +1372,7 @@ class Minutes extends BOADoc {
 				$content = format_html( $this->content, true );
 
 				$notes = '<input type="text" name="notes" value="'.
-					$notes . '" size="50" />' . "\n";
+					$notes . '" size="50">' . "\n";
 				$agenda = '<textarea name="agenda" cols="85" rows="10">'.
 					$agenda . "</textarea>\n";
 				$content = '<textarea name="content" cols="85" rows="35">'.
@@ -1454,12 +1454,12 @@ EOHTML;
 			$link = <<<EOHTML
 				<div class="actions">
 					<a href="?id=admin&amp;doctype=minutes&amp;num={$this->m_id}">
-						<img class="tango" src="display/images/tango/32x32/apps/accessories-text-editor.png" border="0" alt="edit" />
+						<img class="tango" src="display/images/tango/32x32/apps/accessories-text-editor.png" alt="edit">
 						edit
 					</a>
 					&nbsp;&nbsp;
 					<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->m_id}">
-						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete">
+						<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" alt="delete">
 						delete
 						</a>
 				</div>
@@ -1549,7 +1549,7 @@ EOHTML;
 			</div>
 			<div class="actions">
 				<a href="?id=admin&amp;doctype=minutes&amp;delete={$this->m_id}&confirm_del=1">
-					<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" border="0" alt="delete">
+					<img class="tango" src="display/images/tango/32x32/actions/edit-delete.png" alt="delete">
 						confirm delete</a>
 			</div>
 EOHTML;

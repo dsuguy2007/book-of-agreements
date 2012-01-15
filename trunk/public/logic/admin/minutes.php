@@ -37,19 +37,19 @@
 	else {
 		if ( $num > 0 ) {
 			$update_string = 
-				'<input type="hidden" name="update" value="1" />' . "\n";
+				'<input type="hidden" name="update" value="1">' . "\n";
 		}
 
 		echo '<h1>admin minutes entry tool</h1>'.
 			'<form action="?id=admin" method="post">' . "\n".
-			'<input type="hidden" name="doctype" value="minutes" />' . "\n".
-			'<input type="hidden" name="admin_post" value="1" />' . "\n".
-			'<input type="hidden" name="num" value="'.$num.'" />' . "\n".
+			'<input type="hidden" name="doctype" value="minutes">' . "\n".
+			'<input type="hidden" name="admin_post" value="1">' . "\n".
+			'<input type="hidden" name="num" value="'.$num.'">' . "\n".
 			$update_string . 
 			$Mins->Date->selectDate( ) .
 			$Cmty->selectCommittee( $Mins->cid );
 		$Mins->display( 'form' );
 		echo '<p><input type="submit" name="save" ' .
-			'value="save changes &rarr;" />' . "</p></form>\n";
+			'value="save changes &rarr;">' . "</p></form>\n";
 	}
 ?>

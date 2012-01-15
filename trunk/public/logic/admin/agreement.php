@@ -50,15 +50,15 @@
 		$num = $Agrms->getId();
 		if ( $num > 0 ) {
 			$update_string = 
-				'<input type="hidden" name="update" value="1" />' . "\n";
+				'<input type="hidden" name="update" value="1">' . "\n";
 		}
 
 		echo <<<EOHTML
 			<h1>admin agreement entry tool</h1>
 			<form action="?id=admin" method="post">
-			<input type="hidden" name="doctype" value="agreement" />
-			<input type="hidden" name="admin_post" value="1" />
-			<input type="hidden" name="num" value="{$num}" />
+			<input type="hidden" name="doctype" value="agreement">
+			<input type="hidden" name="admin_post" value="1">
+			<input type="hidden" name="num" value="{$num}">
 			{$update_string}
 EOHTML;
 

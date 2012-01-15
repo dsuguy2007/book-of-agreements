@@ -10,7 +10,7 @@
 
 		if ( $_SESSION['boa-admin-passwd'] != $admin_string ) { 
 			echo '<form action="" method="post">
-				admin password: <input type="password" name="pw" value="" />
+				admin password: <input type="password" name="pw" value="">
 				</form>';
 			exit( 0 );
 		} 

@@ -1,16 +1,16 @@
 <p class="menu">
 <?php
 	if ( $id != 'home' )	#special link home
-	{ echo '<a href="?id=home">Recent</a><br />'."\n"; }
-	else { echo '<span class="link">Recent</span><br />'."\n"; }
+	{ echo '<a href="?id=home">Recent</a><br>'."\n"; }
+	else { echo '<span class="link">Recent</span><br>'."\n"; }
 
 	if (( $id == 'agreement' ) && ( !isset( $num )))
-	{ echo '<span class="link">All Agreements</span><br />'."\n"; }
-	else { echo '<a href="?id=agreement">All Agreements</a><br />'."\n"; }
+	{ echo '<span class="link">All Agreements</span><br>'."\n"; }
+	else { echo '<a href="?id=agreement">All Agreements</a><br>'."\n"; }
 
 	if (( $id == 'minutes' ) && ( !isset( $num )))
-	{ echo '<span class="link">All Minutes</span><br />'."\n"; }
-	else { echo '<a href="?id=minutes">All Minutes</a><br />'."\n"; }
+	{ echo '<span class="link">All Minutes</span><br>'."\n"; }
+	else { echo '<a href="?id=minutes">All Minutes</a><br>'."\n"; }
 ?>
 </p>
 
@@ -23,12 +23,12 @@
 		{
 			echo '<span class="link">'.$name.
 				'&nbsp;<span class="linkcount">' . #$CmtyCount[$link] .
-				"</span></span><br />\n";
+				"</span></span><br>\n";
 		}
 		else
 		{
 			echo <<<EOHTML
-			<a href="?id=committee&amp;cmty={$link}">{$name}</a><br />
+			<a href="?id=committee&amp;cmty={$link}">{$name}</a><br>
 EOHTML;
 		}
 
@@ -42,14 +42,14 @@ EOHTML;
 				if ( $sub == $sublink )
 				{
 					$link_content = <<<EOHTML
-						<span class="link">&nbsp; &nbsp; &middot; {$subname}&nbsp;</span><br />
+						<span class="link">&nbsp; &nbsp; &middot; {$subname}&nbsp;</span><br>
 EOHTML;
 				}
 				else
 				{
 					$link_content = <<<EOHTML
 						<a href="?id=committee&amp;cmty={$link}&amp;sub={$sublink}">
-						&nbsp; &nbsp; &middot; {$subname}</a><br />
+						&nbsp; &nbsp; &middot; {$subname}</a><br>
 EOHTML;
 				}
 				echo <<<EOHTML
