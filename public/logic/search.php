@@ -16,8 +16,9 @@
 	foreach($docs_allowed as $d) {
 		$checked = ($d == $show_docs) ? ' checked' : '';
 		$document_types .= <<<EOHTML
-			<input type="radio" name="show_docs" value="{$d}" id="{$d}"{$checked}>
-				<label for="{$d}">{$d}</label>
+			<label>
+				<input type="radio" name="show_docs" value="{$d}" {$checked}> {$d}
+			</label>
 EOHTML;
 	}
 
@@ -35,7 +36,7 @@ EOHTML;
 				<h3>Advanced Search Options</h3>
 				<form name="advanced_search" method="get" action="?id=search">
 					<input type="hidden" name="id" value="search"/>
-					<p><input type="text" name="q" value="{$search_terms}" size="50"/></p>
+					<p><input type="search" name="q" value="{$search_terms}" size="50"/></p>
 					<p>Committee:&nbsp;<select name="cmty">{$com_options}</select></p>
 					{$start}
 					{$end}

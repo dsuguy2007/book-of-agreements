@@ -15,7 +15,7 @@
 	$SQL_Agr_Clauses = array();
 	$SQL_Min_Clauses = array();
 
-	$docs_allowed = array('all', 'agreements', 'minutes');
+	$docs_allowed = array('agreements', 'minutes', 'all');
 	$show_docs = (isset($_GET['show_docs']) && in_array($_GET['show_docs'], $docs_allowed)) ?
 		$_GET['show_docs'] : NULL;
 
