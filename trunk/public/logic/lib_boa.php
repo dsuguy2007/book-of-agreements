@@ -323,11 +323,8 @@ class BOADoc {
 	var $id;
 
 	function BOADoc() {
-		global $HDUP;
-
-		require_once 'logic/mysql_api.php';
-		$this->mysql = new MysqlApi($HDUP['host'], $HDUP['database'],
-			$HDUP['user'], $HDUP['password']);
+		global $mysql_api;
+		$this->mysql = $mysql_api;
 
 		$this->cmty = new Committee();
 	}
