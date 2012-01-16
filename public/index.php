@@ -1,10 +1,15 @@
 <?php
 	session_start();
+	global $mysql_api;
 
 	// if the file exists, then use it to pull in the users list. Otherwise,
 	// ignore it so it can be created.
 	if (file_exists('config.php')) {
 		require_once('config.php');
+
+        require_once 'logic/mysql_api.php';
+        $mysql_api = new MysqlApi($HDUP['host'], $HDUP['database'],
+            $HDUP['user'], $HDUP['password']);
 	}
 
 	$authenticated = false;
@@ -21,6 +26,9 @@
 		$authenticated = attempt_login();	
 	}
 
+	require_once( 'main.php' );
+
+	// ------------------------
 	function attempt_login()
 	{
 		global $Basic_Auth_Users;
@@ -52,6 +60,4 @@
 		echo 'You hit the Cancel button, please try again, or ' .
 			'<a href="?">go back</a>';
 	}
-
-	require_once( 'main.php' );
 ?>
