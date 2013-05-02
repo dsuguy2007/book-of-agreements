@@ -11,9 +11,9 @@
 		create_config_file();
 	}
 
-	$PUBLIC_USER = false;
+	$PUBLIC_USER = FALSE;
 	if (!$authenticated) {
-		$PUBLIC_USER = true;
+		$PUBLIC_USER = TRUE;
 	}
 
 	$use_jquery = FALSE;

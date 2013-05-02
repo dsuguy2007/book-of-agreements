@@ -781,7 +781,8 @@ EOHTML;
 					$content .= "<h3>Background:</h3>\n$background\n";
 				}
 				if ( !empty( $full )) {
-					$content .= "<h3>Proposal:</h3>\n$full\n";
+					$content .= "<h3>Proposal:</h3>\n" .
+						"<div class=\"proposal\">{$full}</div>\n";
 				}
 				if ( !empty( $comments )) {
 					$content .= "<h3>Comments:</h3>\n$comments\n";
