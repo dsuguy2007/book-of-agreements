@@ -5,6 +5,7 @@
 	<title><?= $title; ?></title>
 	<link rel="stylesheet" href="display/styles/default.css" type="text/css">
 	<link rel="stylesheet" href="display/styles/print.css" type="text/css" media="print">
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
 
 <?php
 	foreach($stylesheets as $s) {
@@ -13,15 +14,10 @@
 EOHTML;
 	}
 
-	if ($use_jquery) {
-		echo <<<EOHTML
-		<script type="text/javascript" src="http://code.jquery.com/jquery-1.5.1.min.js"></script>
-EOHTML;
-	}
 
 	if (!is_null($js_code)) {
 		echo <<<EOHTML
-	<script type="text/javascript">{$js_code}</script>
+	<script>{$js_code}</script>
 EOHTML;
 	}
 

@@ -12,12 +12,12 @@
             $HDUP['user'], $HDUP['password']);
 	}
 
-	$authenticated = false;
+	$authenticated = FALSE;
 	if ( isset( $_SESSION['logged_in'] ) && $_SESSION['logged_in'] == 1 ) {
-		$authenticated = true;
+		$authenticated = TRUE;
 
 		if ( isset( $_GET['login'] ) && $_GET['login'] == 0 ) {
-			$authenticated = false;
+			$authenticated = FALSE;
 			unset($_SERVER['PHP_AUTH_USER']); 
 			$_SESSION['logged_in'] = 0;
 		}

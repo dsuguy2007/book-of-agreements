@@ -28,11 +28,8 @@
 
 	# set some variables...
 	$doctype = '';
-	if ( isset( $_POST['doctype'] ) && in_array( $_POST['doctype'], $Types )) {
-		$doctype = $_POST['doctype'];
-	}
-	elseif ( isset( $_GET['doctype'] ) && in_array( $_GET['doctype'], $Types )) {
-		$doctype = $_GET['doctype'];
+	if ( isset( $_REQUEST['doctype'] ) && in_array( $_REQUEST['doctype'], $Types )) {
+		$doctype = $_REQUEST['doctype'];
 	}
 
 	if ( empty( $doctype )) {
